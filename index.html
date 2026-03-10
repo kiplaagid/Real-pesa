@@ -1,32 +1,121 @@
-..history-section { background: #222; padding: 15px; border-radius: 12px; margin-top: 25px; border: 1px solid #444; }
-.history-title { font-size: 18px; color: #aaa; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-.history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; font-size: 14px; }
-.win-text { color: #28a745; font-weight: bold; }
-.loss-text { color: #ff4444; font-weight: bold; }
- { background: #222; padding: 15px; border-radius: 12px; margin-top: 25px; border: 1px solid #444; }
-.history-title { font-size: 18px; color: #aaa; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-.history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; font-size: 14px; }
-.history-item:last-child { border: none; }
-.win-text { color: #28a745; font-weight: bold; }
-.loss-text { color: #ff4444; font-weight: bold; }
-<div class="history-section">
-    <div class="history-title">Recent Rounds</div>
-    <div id="historyLog">
-        <div style="color: #666; font-style: italic;">No games played yet...</div>
-    </div>
-</div>
-function updateHistory(multiplier, status, amount) {
-    let log = document.getElementById('historyLog');
-    if (log.innerHTML.includes("No games played")) { log.innerHTML = ""; }
-
-    let statusClass = status === "WIN" ? "win-text" : "loss-text";
-    let entry = `
-        <div class="history-item">
-            <span>${multiplier}x</span>
-            <span class="${statusClass}">${status}</span>
-            <span>KES ${amount}</span>
-        </div>`;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-pesa Aviator</title>
+    <style>
+        body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; padding: 20px; margin: 0; }
+        .wallet-container { background: #333; padding: 10px; border-radius: 10px; margin-bottom: 20px; display: inline-block; width: 90%; }
+        .wallet { font-size: 28px; color: #28a745; font-weight: bold; }
+        .multiplier { font-size: 80px; color: #ff4444; font-weight: bold; margin: 30px 0; text-shadow: 0 0 10px rgba(255, 68, 68, 0.5); }
+        input { padding: 15px; font-size: 18px; width: 85%; border-radius: 8px; border: none; margin-bottom: 10px; background: #fff; color: #000; }
+        button { padding: 18px; font-size: 20px; width: 90%; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .bet-btn { background: #28a745; color: white; margin-bottom: 10px; }
+        .cash-btn { background: #ffc107; color: black; display: none; }
+        .deposit-section { background: #222; padding: 20px; border-radius: 15px; border: 2px solid #28a745; margin-top: 30px; }
+        .pochi-btn { background: #007bff; color: white; text-decoration: none; padding: 15px; border-radius: 8px; display: block; width: 80%; margin: 15px auto; font-size: 18px; }
+        
+        /* Round History Styles */
+        .history-section { background: #222; padding: 15px; border-radius: 12px; margin-top: 25px; border: 1px solid #444; text-align: left; }
+        .history-title { font-size: 18px; color: #aaa; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; text-align: center; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; font-size: 14px; }
+        .win-text { color: #28a745; font-weight: bold; }
+        .loss-text { color: #ff4444; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Real-pesa Aviator</h1>
     
-    log.innerHTML = entry + log.innerHTML; // Adds new round to the top
-    if (log.children.length > 5) { log.removeChild(log.lastElementChild); } // Keep it to 5 rounds
-}
+    <div class="wallet-container">
+        <div class="wallet">Wallet: KES <span id="balance">0</span></div>
+        <div id="status" style="color: #aaa; margin-top: 5px;">Deposit to fly!</div>
+    </div>
+    
+    <div class="multiplier" id="display">1.00x</div>
+    
+    <input type="number" id="stake" value="10" min="1">
+    <button class="bet-btn" id="startBtn" onclick="startGame()">PLACE BET</button>
+    <button class="cash-btn" id="cashBtn" onclick="cashOut()">CASH OUT</button>
+
+    <div class="deposit-section">
+        <h3 style="color: #28a745; margin-top: 0;">M-PESA Deposit</h3>
+        <p>Send stake to Pochi Number: <strong>0797097831</strong></p>
+        <a href="tel:*334*6*1*1*0797097831*10#" class="pochi-btn">CLICK TO PAY KES 10</a>
+        <input type="text" id="txnCode" placeholder="Paste Transaction Code">
+        <button onclick="verifyPochi()" style="background: #444; color: white;">VERIFY DEPOSIT</button>
+    </div>
+
+    <div class="history-section">
+        <div class="history-title">Recent Rounds</div>
+        <div id="historyLog">
+            <div style="color: #666; font-style: italic; text-align: center;">No games played yet...</div>
+        </div>
+    </div>
+
+    <script>
+        let balance = 0; let count = 1.00; let running = false; let interval; let currentStake = 0;
+
+        function verifyPochi() {
+            let code = document.getElementById('txnCode').value.trim();
+            if (code.length < 8) { alert("Invalid Code!"); return; }
+            balance += 10;
+            updateUI();
+            alert("Success! KES 10 added.");
+            document.getElementById('txnCode').value = "";
+        }
+
+        function updateHistory(multiplier, status, amount) {
+            let log = document.getElementById('historyLog');
+            if (log.innerHTML.includes("No games played")) { log.innerHTML = ""; }
+            let statusClass = status === "WIN" ? "win-text" : "loss-text";
+            let entry = `<div class="history-item">
+                <span>${multiplier}x</span>
+                <span class="${statusClass}">${status}</span>
+                <span>KES ${amount}</span>
+            </div>`;
+            log.innerHTML = entry + log.innerHTML;
+            if (log.children.length > 5) { log.removeChild(log.lastElementChild); }
+        }
+
+        function startGame() {
+            currentStake = parseFloat(document.getElementById('stake').value);
+            if (balance < currentStake) { alert("Insufficient Balance!"); return; }
+            balance -= currentStake;
+            updateUI();
+            count = 1.00; running = true;
+            document.getElementById('startBtn').style.display = "none";
+            document.getElementById('cashBtn').style.display = "block";
+            let crashPoint = (Math.random() * 5 + 1.1).toFixed(2);
+            interval = setInterval(() => {
+                count += 0.01;
+                document.getElementById('display').innerText = count.toFixed(2) + "x";
+                if (count >= crashPoint) { gameOver(); }
+            }, 100);
+        }
+
+        function cashOut() {
+            if (running) {
+                clearInterval(interval); running = false;
+                let win = currentStake * count;
+                balance += win;
+                updateHistory(count.toFixed(2), "WIN", win.toFixed(2));
+                updateUI(); resetButtons();
+            }
+        }
+
+        function gameOver() {
+            clearInterval(interval); running = false;
+            updateHistory(count.toFixed(2), "LOSS", currentStake.toFixed(2));
+            resetButtons();
+            alert("Bust!");
+        }
+
+        function updateUI() { document.getElementById('balance').innerText = balance.toFixed(2); }
+        function resetButtons() {
+            document.getElementById('startBtn').style.display = "block";
+            document.getElementById('cashBtn').style.display = "none";
+        }
+    </script>
+</body>
+</html>
