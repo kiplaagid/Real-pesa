@@ -1,112 +1,31 @@
-<script>
-    let balance = 0; let count = 1.00; let running = false; let interval; let currentStake = 0;
-    let isAutoMode = true; // This keeps the plane moving even without a bet
-
-    // Start the auto-loop as soon as the page loads
-    window.onload = function() {
-        startAutoRound();
-    };
-
-    function verifyPochi() {
-        let code = document.getElementById('txnCode').value.trim();
-        if (code.length < 8) { alert("Invalid Code!"); return; }
-        balance += 10;
-        updateUI();
-        alert("Success! KES 10 added.");
-        document.getElementById('txnCode').value = "";
-    }
-
-    function updateHistory(multiplier, status, amount) {
-        let log = document.getElementById('historyLog');
-        if (log.innerHTML.includes("No games played")) { log.innerHTML = ""; }
-        let statusClass = status === "WIN" ? "win-text" : "loss-text";
-        let entry = `<div class="history-item">
-            <span>${multiplier}x</span>
-            <span class="${statusClass}">${status}</span>
-            <span>KES ${amount}</span>
-        </div>`;
-        log.innerHTML = entry + log.innerHTML;
-        if (log.children.length > 5) { log.removeChild(log.lastElementChild); }
-    }
-
-    function startAutoRound() {
-        if (running) return;
-        
-        // Reset display for new round
-        count = 1.00;
-        document.getElementById('display').innerText = "1.00x";
-        document.getElementById('display').style.color = "#ff4444";
-        document.getElementById('status').innerText = "Waiting for next round...";
-        
-        // 5 second countdown before flying
-        setTimeout(() => {
-            running = true;
-            document.getElementById('status').innerText = "Plane is airborne!";
-            let crashPoint = (Math.random() * 5 + 1.1).toFixed(2);
-            
-            interval = setInterval(() => {
-                count += 0.01;
-                document.getElementById('display').innerText = count.toFixed(2) + "x";
-                if (count >= crashPoint) { 
-                    clearInterval(interval);
-                    autoGameOver();
-                }
-            }, 100);
-        }, 5000); 
-    }
-
-    function startGame() {
-        currentStake = parseFloat(document.getElementById('stake').value);
-        if (balance < currentStake) { alert("Insufficient Balance!"); return; }
-        
-        // If the plane is already flying in auto-mode, the player joins the current round
-        if (running) {
-            balance -= currentStake;
-            updateUI();
-            isAutoMode = false; // Now it's a real bet
-            document.getElementById('startBtn').style.display = "none";
-            document.getElementById('cashBtn').style.display = "block";
-        } else {
-            alert("Wait for the next round to start!");
-        }
-    }
-
-    function cashOut() {
-        if (running && !isAutoMode) {
-            let win = currentStake * count;
-            balance += win;
-            updateHistory(count.toFixed(2), "WIN", win.toFixed(2));
-            updateUI();
-            resetButtons();
-            isAutoMode = true; // Return to watching mode
-            alert("Cashed Out!");
-        }
-    }
-
-    function autoGameOver() {
-        running = false;
-        document.getElementById('display').style.color = "#444";
-        document.getElementById('status').innerText = "BUST!";
-        
-        // If the player was in this round and didn't cash out
-        if (!isAutoMode) {
-            updateHistory(count.toFixed(2), "LOSS", currentStake.toFixed(2));
-            resetButtons();
-            isAutoMode = true;
-        }
-            // ... existing code ...
-    
-        // Start the next round automatically after 3 seconds
-        setTimeout(startAutoRound, 3000);
-    }
-
-    function updateUI() { document.getElementById('balance').innerText = balance.toFixed(2); }
-    function resetButtons() {
-        document.getElementById('startBtn').style.display = "block";
-        document.getElementById('cashBtn').style.display = "none";
-    }
-</script>    // ... existing code ...
-    </script>
-</body>
-</html>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-pesa Aviator</title>
+    <style>
+        body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; padding: 20px; margin: 0; }
+        .wallet-container { background: #333; padding: 10px; border-radius: 10px; margin-bottom: 20px; display: inline-block; width: 90%; }
+        .wallet { font-size: 28px; color: #28a745; font-weight: bold; }
+        .multiplier { font-size: 80px; color: #ff4444; font-weight: bold; margin: 30px 0; text-shadow: 0 0 10px rgba(255, 68, 68, 0.5); }
+        input { padding: 15px; font-size: 18px; width: 85%; border-radius: 8px; border: none; margin-bottom: 10px; background: #fff; color: #000; }
+        button { padding: 18px; font-size: 20px; width: 90%; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 5px; }
+        .bet-btn { background: #28a745; color: white; }
+        .cash-btn { background: #ffc107; color: black; display: none; }
+        .withdraw-btn { background: #dc3545; color: white; }
+        .deposit-section { background: #222; padding: 20px; border-radius: 15px; border: 2px solid #28a745; margin-top: 30px; }
+        .pochi-btn { background: #007bff; color: white; text-decoration: none; padding: 15px; border-radius: 8px; display: block; width: 80%; margin: 15px auto; font-size: 18px; }
+        .history-section { background: #222; padding: 15px; border-radius: 12px; margin-top: 25px; border: 1px solid #444; text-align: left; }
+        .history-title { font-size: 18px; color: #aaa; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; text-align: center; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; font-size: 14px; }
+        .win-text { color: #28a745; font-weight: bold; }
+        .loss-text { color: #ff4444; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Real-pesa Aviator</h1>
+    <div class="wallet-container">
+        <div class="wallet">Wallet: KES <span id="balance">0</span></div>
+        <div id="status" style="color: #aaa; margin-top: 5px;">Waiting for next round...</div>
+    </div>
