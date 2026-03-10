@@ -7,7 +7,7 @@
     <style>
         body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; padding: 10px; margin: 0; overflow-x: hidden; }
         
-        /* Round History Pill Styling */
+        /* Professional Round History Pills */
         .history-bar { display: flex; flex-wrap: nowrap; gap: 8px; background: #222; padding: 12px; border-radius: 8px; margin-bottom: 15px; overflow-x: auto; justify-content: flex-start; border: 1px solid #333; }
         .pill { padding: 4px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; white-space: nowrap; }
         .blue { color: #3498db; background: rgba(52, 152, 219, 0.15); border: 1px solid #3498db; }
@@ -17,11 +17,131 @@
         /* Multiplier Display */
         .multiplier-display { font-size: 70px; color: #ff4444; font-weight: bold; margin: 40px 0; text-shadow: 0 0 15px rgba(255, 68, 68, 0.4); }
         
-        /* Professional Dual Betting Box */
+        /* Dual Betting Controls */
         .bet-container { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 20px; }
         .bet-box { background: #2c2c2c; padding: 15px; border-radius: 15px; width: 90%; display: flex; align-items: center; justify-content: space-between; border: 1px solid #444; }
         .bet-inputs { display: flex; flex-direction: column; gap: 8px; width: 45%; }
-        input { padding: 10px; border-radius: 5px; border: none; background: #000; color: #fff; text-align: center; font-weight: bold; }
+        input { padding: 10px; border-radius: 5px; border: none; background: #000; color: #fff; text-align: center; font-weight: bold; width: 80%; }
         .bet-btn-large { background: #28a745; color: white; border: none; padding: 15px; border-radius: 10px; width: 50%; font-size: 20px; font-weight: bold; cursor: pointer; }
-        .cash
-        
+        .cash-btn { background: #ffc107; color: #000; }
+
+        /* Wallet & M-PESA */
+        .wallet-info { background: #333; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 18px; color: #28a745; font-weight: bold; }
+        .deposit-section { background: #222; padding: 15px; border-radius: 12px; border: 1px solid #28a745; margin-top: 20px; font-size: 14px; }
+        .pochi-btn { background: #007bff; color: white; text-decoration: none; padding: 12px; border-radius: 8px; display: block; margin: 10px auto; font-weight: bold; width: 80%; }
+    </style>
+</head>
+<body>
+
+    <div class="wallet-info">Wallet: KES <span id="balance">0</span></div>
+
+    <div class="history-bar" id="pillLog">
+        <span class="pill blue">1.48x</span>
+        <span class="pill purple">2.52x</span>
+        <span class="pill pink">13.11x</span>
+        <span class="pill blue">1.16x</span>
+    </div>
+
+    <div class="multiplier-display" id="display">1.00x</div>
+
+    <div class="bet-container">
+        <div class="bet-box">
+            <div class="bet-inputs">
+                <input type="number" id="stake1" value="10">
+                <div style="display: flex; gap: 4px; font-size: 10px; color: #aaa; justify-content: center;">
+                    <span>100</span><span>200</span><span>500</span><span>1000</span>
+                </div>
+            </div>
+            <button class="bet-btn-large" id="btn1" onclick="placeBet()">BET<br><small id="stakeLabel">10.00 KES</small></button>
+        </div>
+    </div>
+
+    <div class="deposit-section">
+        <h3 style="margin: 0; color: #28a745;">M-PESA Deposit</h3>
+        <p>Pochi: <strong>0797097831</strong></p>
+        <a href="tel:*334*6*1*1*0797097831*10#" class="pochi-btn">PAY KES 10</a>
+        <input type="text" id="txnCode" placeholder="Transaction Code">
+        <button onclick="verifyPochi()" style="background:#444; color:white; border:none; padding:10px; border-radius:5px; width:85%; margin-top:10px; cursor:pointer;">VERIFY DEPOSIT</button>
+    </div>
+
+    <script>
+        let balance = 0; let count = 1.00; let running = false; let interval; 
+        let currentStake = 0; let isBetActive = false;
+
+        window.onload = function() { startAutoLoop(); };
+
+        function startAutoLoop() {
+            if (running) return;
+            count = 1.00;
+            document.getElementById('display').innerText = "1.00x";
+            document.getElementById('display').style.color = "#ff4444";
+            
+            setTimeout(() => {
+                running = true;
+                let crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
+                interval = setInterval(() => {
+                    count += 0.01;
+                    document.getElementById('display').innerText = count.toFixed(2) + "x";
+                    if (count >= crashPoint) { endRound(); }
+                }, 100);
+            }, 4000);
+        }
+
+        function placeBet() {
+            let stake = parseFloat(document.getElementById('stake1').value);
+            if (isBetActive) { cashOut(); return; }
+            if (balance < stake) { alert("Insufficient Funds!"); return; }
+            
+            balance -= stake; currentStake = stake; isBetActive = true;
+            updateUI();
+            document.getElementById('btn1').innerHTML = "CASH OUT<br><small>WAIT...</small>";
+            document.getElementById('btn1').classList.add('cash-btn');
+        }
+
+        function cashOut() {
+            if (running && isBetActive) {
+                let win = currentStake * count;
+                balance += win;
+                addPill(count.toFixed(2));
+                resetBet();
+                updateUI();
+                alert("Won: KES " + win.toFixed(2));
+            }
+        }
+
+        function endRound() {
+            clearInterval(interval); running = false;
+            if (isBetActive) { addPill(count.toFixed(2)); resetBet(); }
+            document.getElementById('display').style.color = "#444";
+            setTimeout(startAutoLoop, 3000);
+        }
+
+        function addPill(val) {
+            let color = "blue";
+            if (val >= 2) color = "purple";
+            if (val >= 10) color = "pink";
+            let log = document.getElementById('pillLog');
+            let newPill = document.createElement('span');
+            newPill.className = `pill ${color}`;
+            newPill.innerText = val + "x";
+            log.prepend(newPill);
+        }
+
+        function verifyPochi() {
+            let code = document.getElementById('txnCode').value.trim();
+            if (code.length < 5) { alert("Invalid Code"); return; }
+            balance += 10; updateUI(); 
+            alert("KES 10 added!");
+            document.getElementById('txnCode').value = "";
+        }
+
+        function resetBet() {
+            isBetActive = false;
+            document.getElementById('btn1').innerHTML = "BET<br><small>10.00 KES</small>";
+            document.getElementById('btn1').classList.remove('cash-btn');
+        }
+
+        function updateUI() { document.getElementById('balance').innerText = balance.toFixed(2); }
+    </script>
+</body>
+</html>
