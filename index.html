@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-pesa Aviator Pro</title>
     <style>
-        body { background: #121212; color: white; text-align: center; font-family: 'Arial', sans-serif; margin: 0; overflow-x: hidden; padding-bottom: 50px; }
+        body { background: #121212; color: white; text-align: center; font-family: sans-serif; margin: 0; overflow-x: hidden; padding-bottom: 50px; }
         .header { display: flex; justify-content: space-between; padding: 12px; background: #1e1e1e; font-size: 13px; border-bottom: 2px solid #e91e63; }
         .history-container { display: flex; gap: 8px; padding: 10px; overflow-x: auto; background: #1a1a1a; border-bottom: 1px solid #333; height: 35px; align-items: center; }
         .pill { padding: 4px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; min-width: 50px; white-space: nowrap; }
@@ -13,20 +13,14 @@
         .purple { color: #9b59b6; border: 1px solid #9b59b6; background: rgba(155, 89, 182, 0.1); }
         .pink { color: #e91e63; border: 1px solid #e91e63; background: rgba(233, 30, 99, 0.1); }
         .game-area { height: 260px; position: relative; background: radial-gradient(circle at bottom left, #1e1e1e, #000); overflow: hidden; margin: 10px; border-radius: 15px; border: 1px solid #333; }
-        .plane { position: absolute; bottom: 30px; left: 30px; width: 70px; transition: transform 0.1s linear; display: none; z-index: 5; }
+        .plane { position: absolute; bottom: 30px; left: 30px; width: 70px; display: none; z-index: 5; }
         .multiplier { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; font-weight: bold; z-index: 10; }
         .bet-box { background: #1e1e1e; padding: 20px; border-radius: 25px; width: 92%; margin: 10px auto; border: 1px solid #333; }
-        .tabs { display: flex; justify-content: center; gap: 30px; margin-bottom: 15px; }
-        .tab { color: #888; cursor: pointer; font-weight: bold; font-size: 14px; }
-        .tab.active { color: white; border-bottom: 2px solid #28a745; }
-        input[type="number"] { width: 70%; padding: 12px; background: #000; border: 1px solid #444; color: white; border-radius: 10px; text-align: center; font-size: 20px; margin-bottom: 15px; }
         .btn-main { background: #28a745; color: white; border: none; padding: 18px; border-radius: 15px; width: 100%; font-size: 24px; font-weight: bold; cursor: pointer; }
-        .cashing-out { background: #ffc107 !important; color: black !important; }
         .ticker-wrap { width: 100%; overflow: hidden; background: #222; border-top: 1px solid #e91e63; padding: 8px 0; position: fixed; bottom: 0; z-index: 100; }
         .ticker { display: inline-block; white-space: nowrap; animation: ticker 25s linear infinite; font-size: 13px; }
         @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         .win-msg { color: #28a745; font-weight: bold; margin: 0 30px; }
-        .whatsapp-btn { background: #25D366; color: white; border: none; padding: 15px; width: 92%; border-radius: 12px; font-weight: bold; margin: 15px 0; font-size: 16px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -37,93 +31,37 @@
     <div class="history-container" id="history"></div>
     <div class="game-area">
         <div class="multiplier" id="display">1.00x</div>
-        <svg class="plane" id="plane" viewBox="0 0 64 64" fill="#e91e63">
-            <path d="M62 32l-18-4-10-18h-6l6 18-20 2-8-8h-6l4 12-4 12h6l8-8 20 2-6 18h6l10-18 18-4z"/>
-        </svg>
+        <svg class="plane" id="plane" viewBox="0 0 64 64" fill="#e91e63"><path d="M62 32l-18-4-10-18h-6l6 18-20 2-8-8h-6l4 12-4 12h6l8-8 20 2-6 18h6l10-18 18-4z"/></svg>
     </div>
     <div class="bet-box">
-        <div class="tabs">
-            <span class="tab active" id="betTab" onclick="setMode('manual')">BET</span>
-            <span class="tab" id="autoTab" onclick="setMode('auto')">AUTO</span>
-        </div>
-        <input type="number" id="stake" value="10" min="10">
+        <input type="number" id="stake" value="10" min="10" style="width:70%; padding:12px; background:#000; border:1px solid #444; color:#fff; border-radius:10px; text-align:center; font-size:20px; margin-bottom:15px;">
         <button class="btn-main" id="betBtn" onclick="handleAction()">PLACE BET</button>
-        <div id="autoControls" style="display:none; margin-top:10px; font-size:13px; color:#aaa;">
-            Auto Cash Out at: <input type="number" id="autoValue" value="2.0" step="0.1" style="width:60px; padding:5px; background:#000; color:#fff; border:1px solid #444;">
-        </div>
     </div>
-    <button class="whatsapp-btn" onclick="withdraw()">WITHDRAW VIA WHATSAPP</button>
-    <div class="ticker-wrap">
-        <div class="ticker">
-            <span class="win-msg">0712***456 WON KES 4,500!</span>
-            <span class="win-msg">0798***122 WON KES 12,300!</span>
-            <span class="win-msg">0745***990 WON KES 850!</span>
-            <span class="win-msg">0722***341 WON KES 25,000!</span>
-        </div>
-    </div>
-    <audio id="engineSound" src="https://www.soundjay.com/transportation/sounds/propeller-plane-flying-1.mp3" loop></audio>
-    <audio id="winSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
-<script>
-    let balance = 0; let count = 1.00; let isRunning = false; let betPlaced = false;
-    let mode = 'manual'; let plane = document.getElementById('plane'); let engine = document.getElementById('engineSound');
-    setInterval(() => {
-        let current = parseInt(document.getElementById('players').innerText);
-        document.getElementById('players').innerText = current + (Math.floor(Math.random() * 5) - 2);
-    }, 3000);
-    function setMode(m) {
-        mode = m;
-        document.getElementById('betTab').className = (m === 'manual') ? 'tab active' : 'tab';
-        document.getElementById('autoTab').className = (m === 'auto') ? 'tab active' : 'tab';
-        document.getElementById('autoControls').style.display = (m === 'auto') ? 'block' : 'none';
-    }
-    function startRound() {
-        if(isRunning) return;
-        count = 1.00;
-        document.getElementById('display').innerText = "1.00x";
-        document.getElementById('display').style.color = "white";
-        plane.style.display = "block";
-        plane.style.transform = `translate(0px, 0px)`;
-        setTimeout(() => {
-            isRunning = true;
-            engine.play();
-            let crash = (Math.random() * 4 + 1.05).toFixed(2);
-            let gameInterval = setInterval(() => {
-                count += 0.01;
-                document.getElementById('display').innerText = count.toFixed(2) + "x";
-                let x = (count - 1) * 50; let y = (count - 1) * 35;
-                plane.style.transform = `translate(${x}px, -${y}px)`;
-                if(mode === 'auto' && betPlaced && count >= parseFloat(document.getElementById('autoValue').value)) { cashOut(); }
-                if(count >= crash) { clearInterval(gameInterval); crashGame(); }
-            }, 100);
-        }, 3000);
-    }
-    function handleAction() {
-        if(!betPlaced) {
-            let s = parseFloat(document.getElementById('stake').value);
-            if(balance < s) return alert("Please deposit first!");
-            balance -= s; betPlaced = true;
-            document.getElementById('balance').innerText = balance.toFixed(2);
-            document.getElementById('betBtn').innerText = "CASH OUT";
-            document.getElementById('betBtn').classList.add('cashing-out');
-        } else { cashOut(); }
-    }
-    function cashOut() {
-        if(isRunning && betPlaced) {
-            let win = parseFloat(document.getElementById('stake').value) * count;
-            balance += win; document.getElementById('winSound').play();
-            betPlaced = false; resetUI();
-            alert("WINNER! KES " + win.toFixed(2));
+    <div class="ticker-wrap"><div class="ticker">
+        <span class="win-msg">0712***456 WON KES 4,500!</span><span class="win-msg">0798***122 WON KES 12,300!</span><span class="win-msg">0745***990 WON KES 850!</span>
+    </div></div>
+    <script>
+        let balance = 0; let count = 1.00; let isRunning = false; let betPlaced = false;
+        let plane = document.getElementById('plane');
+        function startRound() {
+            if(isRunning) return; count = 1.00;
+            document.getElementById('display').innerText = "1.00x";
+            plane.style.display = "block"; plane.style.transform = `translate(0px, 0px)`;
+            setTimeout(() => {
+                isRunning = true; let crash = (Math.random() * 4 + 1.05).toFixed(2);
+                let gameInterval = setInterval(() => {
+                    count += 0.01; document.getElementById('display').innerText = count.toFixed(2) + "x";
+                    let x = (count - 1) * 50; let y = (count - 1) * 35;
+                    plane.style.transform = `translate(${x}px, -${y}px)`;
+                    if(count >= crash) { clearInterval(gameInterval); isRunning = false; plane.style.display = "none"; document.getElementById('display').innerText = "FLEW AWAY!"; setTimeout(startRound, 4000); }
+                }, 100);
+            }, 2000);
         }
-    }
-    function crashGame() {
-        isRunning = false; engine.pause(); engine.currentTime = 0;
-        document.getElementById('display').innerText = "FLEW AWAY!";
-        document.getElementById('display').style.color = "#ff4444";
-        plane.style.display = "none";
-        addHistory(count.toFixed(2));
-        betPlaced = false; resetUI();
-        setTimeout(startRound, 4000);
-    }
-    function addHistory(val) {
-        let color = val < 2 ? 'blue' :
-    
+        function handleAction() {
+            if(!betPlaced) { betPlaced = true; document.getElementById('betBtn').innerText = "CASH OUT"; document.getElementById('betBtn').style.background = "#ffc107"; } 
+            else { betPlaced = false; document.getElementById('betBtn').innerText = "PLACE BET"; document.getElementById('betBtn').style.background = "#28a745"; alert("WINNER!"); }
+        }
+        window.onload = startRound;
+    </script>
+</body>
+</html>
