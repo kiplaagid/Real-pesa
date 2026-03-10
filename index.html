@@ -3,26 +3,54 @@
 <head>
     <title>Real-pesa Aviator</title>
     <style>
-        body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; }
-        .multiplier { font-size: 50px; color: #ff4444; margin-top: 50px; }
-        button { padding: 15px 30px; font-size: 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; padding-top: 50px; }
+        .multiplier { font-size: 70px; color: #ff4444; margin-bottom: 20px; font-weight: bold; }
+        .status { font-size: 20px; margin-bottom: 20px; color: #aaa; }
+        button { padding: 15px 30px; font-size: 18px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .start-btn { background: #28a745; color: white; }
+        .cash-btn { background: #ffc107; color: black; }
     </style>
 </head>
 <body>
     <h1>Real-pesa Aviator</h1>
+    <div class="status" id="status">Ready to fly?</div>
     <div class="multiplier" id="display">1.00x</div>
-    <br>
-    <button onclick="startGame()">Start Flight</button>
-
+    <button class="start-btn" id="startBtn" onclick="startGame()">BET</button>
+    <button class="cash-btn" id="cashBtn" onclick="cashOut()" style="display:none;">CASH OUT</button>
     <script>
+        let count = 1.00; let running = false; let interval;
         function startGame() {
-            let count = 1.00;
-            const display = document.getElementById('display');
-            setInterval(() => {
+            count = 1.00; running = true;
+            document.getElementById('status').innerText = "Plane is climbing...";
+            document.getElementById('display').style.color = "#ff4444";
+            document.getElementById('startBtn').style.display = "none";
+            document.getElementById('cashBtn').style.display = "inline-block";
+            let crashPoint = (Math.random() * 5 + 1.1).toFixed(2);
+            interval = setInterval(() => {
                 count += 0.01;
-                display.innerText = count.toFixed(2) + "x";
+                document.getElementById('display').innerText = count.toFixed(2) + "x";
+                if (count >= crashPoint) { gameOver(); }
             }, 100);
+        }
+        function cashOut() {
+            if (running) {
+                clearInterval(interval); running = false;
+                document.getElementById('status').innerText = "SUCCESS! You cashed out at " + count.toFixed(2) + "x";
+                resetButtons();
+            }
+        }
+        function gameOver() {
+            clearInterval(interval); running = false;
+            document.getElementById('status').innerText = "FLEW AWAY!";
+            document.getElementById('display').style.color = "gray";
+            resetButtons();
+        }
+        function resetButtons() {
+            document.getElementById('startBtn').style.display = "inline-block";
+            document.getElementById('cashBtn').style.display = "none";
+            document.getElementById('startBtn').innerText = "BET AGAIN";
         }
     </script>
 </body>
 </html>
+
