@@ -1,6 +1,32 @@
-.history-section { background: #222; padding: 15px; border-radius: 12px; margin-top: 25px; border: 1px solid #444; }
+..history-section { background: #222; padding: 15px; border-radius: 12px; margin-top: 25px; border: 1px solid #444; }
+.history-title { font-size: 18px; color: #aaa; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+.history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; font-size: 14px; }
+.win-text { color: #28a745; font-weight: bold; }
+.loss-text { color: #ff4444; font-weight: bold; }
+ { background: #222; padding: 15px; border-radius: 12px; margin-top: 25px; border: 1px solid #444; }
 .history-title { font-size: 18px; color: #aaa; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
 .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; font-size: 14px; }
 .history-item:last-child { border: none; }
 .win-text { color: #28a745; font-weight: bold; }
 .loss-text { color: #ff4444; font-weight: bold; }
+<div class="history-section">
+    <div class="history-title">Recent Rounds</div>
+    <div id="historyLog">
+        <div style="color: #666; font-style: italic;">No games played yet...</div>
+    </div>
+</div>
+function updateHistory(multiplier, status, amount) {
+    let log = document.getElementById('historyLog');
+    if (log.innerHTML.includes("No games played")) { log.innerHTML = ""; }
+
+    let statusClass = status === "WIN" ? "win-text" : "loss-text";
+    let entry = `
+        <div class="history-item">
+            <span>${multiplier}x</span>
+            <span class="${statusClass}">${status}</span>
+            <span>KES ${amount}</span>
+        </div>`;
+    
+    log.innerHTML = entry + log.innerHTML; // Adds new round to the top
+    if (log.children.length > 5) { log.removeChild(log.lastElementChild); } // Keep it to 5 rounds
+}
