@@ -3,9 +3,11 @@
 <head>
     <title>Real-pesa Aviator</title>
     <style>
-        body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; padding-top: 50px; }
+        body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; padding-top: 30px; }
+        .wallet { font-size: 24px; color: #28a745; margin-bottom: 10px; font-weight: bold; }
         .multiplier { font-size: 70px; color: #ff4444; margin-bottom: 20px; font-weight: bold; }
         .status { font-size: 20px; margin-bottom: 20px; color: #aaa; }
+        input { padding: 10px; font-size: 16px; width: 120px; border-radius: 5px; margin-bottom: 10px; border: none; }
         button { padding: 15px 30px; font-size: 18px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .start-btn { background: #28a745; color: white; }
         .cash-btn { background: #ffc107; color: black; }
@@ -13,19 +15,29 @@
 </head>
 <body>
     <h1>Real-pesa Aviator</h1>
-    <div class="status" id="status">Ready to fly?</div>
+    <div class="wallet">Wallet: KES <span id="balance">1000</span></div>
+    <div class="status" id="status">Enter Stake & Fly</div>
+    <input type="number" id="stake" value="10" min="1" placeholder="Stake Amount">
     <div class="multiplier" id="display">1.00x</div>
-    <button class="start-btn" id="startBtn" onclick="startGame()">BET</button>
+    <button class="start-btn" id="startBtn" onclick="startGame()">PLACE BET</button>
     <button class="cash-btn" id="cashBtn" onclick="cashOut()" style="display:none;">CASH OUT</button>
+
     <script>
-        let count = 1.00; let running = false; let interval;
+        let balance = 1000; let count = 1.00; let running = false; let interval; let currentStake = 0;
         function startGame() {
+            currentStake = parseFloat(document.getElementById('stake').value);
+            if (isNaN(currentStake) || currentStake <= 0) { alert("Please enter a valid stake!"); return; }
+            if (currentStake > balance) { alert("Insufficient Balance!"); return; }
+            
+            balance -= currentStake;
+            updateUI();
             count = 1.00; running = true;
             document.getElementById('status').innerText = "Plane is climbing...";
             document.getElementById('display').style.color = "#ff4444";
             document.getElementById('startBtn').style.display = "none";
             document.getElementById('cashBtn').style.display = "inline-block";
-            let crashPoint = (Math.random() * 5 + 1.1).toFixed(2);
+            
+            let crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
             interval = setInterval(() => {
                 count += 0.01;
                 document.getElementById('display').innerText = count.toFixed(2) + "x";
@@ -35,16 +47,19 @@
         function cashOut() {
             if (running) {
                 clearInterval(interval); running = false;
-                document.getElementById('status').innerText = "SUCCESS! You cashed out at " + count.toFixed(2) + "x";
-                resetButtons();
+                let win = currentStake * count;
+                balance += win;
+                document.getElementById('status').innerText = "WIN! Received: KES " + win.toFixed(2);
+                updateUI(); resetButtons();
             }
         }
         function gameOver() {
             clearInterval(interval); running = false;
-            document.getElementById('status').innerText = "FLEW AWAY!";
+            document.getElementById('status').innerText = "LOST! Plane Flew Away";
             document.getElementById('display').style.color = "gray";
-            resetButtons();
+            updateUI(); resetButtons();
         }
+        function updateUI() { document.getElementById('balance').innerText = balance.toFixed(2); }
         function resetButtons() {
             document.getElementById('startBtn').style.display = "inline-block";
             document.getElementById('cashBtn').style.display = "none";
@@ -53,5 +68,3 @@
     </script>
 </body>
 </html>
-
-
