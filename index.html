@@ -3,99 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-pesa Aviator</title>
+    <title>Real-pesa Aviator Pro</title>
     <style>
-        body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; padding: 10px; margin: 0; overflow-x: hidden; }
-        .history-bar { display: flex; flex-wrap: nowrap; gap: 8px; background: #222; padding: 12px; border-radius: 8px; margin-bottom: 15px; overflow-x: auto; justify-content: flex-start; border: 1px solid #333; }
-        .pill { padding: 4px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; white-space: nowrap; }
-        .blue { color: #3498db; background: rgba(52, 152, 219, 0.15); border: 1px solid #3498db; }
-        .purple { color: #9b59b6; background: rgba(155, 89, 182, 0.15); border: 1px solid #9b59b6; }
-        .pink { color: #e91e63; background: rgba(233, 30, 99, 0.15); border: 1px solid #e91e63; }
-        .multiplier-display { font-size: 70px; color: #ff4444; font-weight: bold; margin: 40px 0; text-shadow: 0 0 15px rgba(255, 68, 68, 0.4); }
-        .bet-box { background: #2c2c2c; padding: 15px; border-radius: 15px; width: 90%; display: flex; align-items: center; justify-content: space-between; border: 1px solid #444; margin: 0 auto; }
-        .bet-inputs { display: flex; flex-direction: column; gap: 8px; width: 45%; }
-        input { padding: 10px; border-radius: 5px; border: none; background: #000; color: #fff; text-align: center; font-weight: bold; width: 80%; }
-        .bet-btn-large { background: #28a745; color: white; border: none; padding: 15px; border-radius: 10px; width: 50%; font-size: 20px; font-weight: bold; cursor: pointer; }
-        .cash-btn { background: #ffc107; color: #000; }
-        .wallet-info { background: #333; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 18px; color: #28a745; font-weight: bold; }
-        .deposit-section { background: #222; padding: 15px; border-radius: 12px; border: 1px solid #28a745; margin-top: 20px; font-size: 14px; }
-        .pochi-btn { background: #007bff; color: white; text-decoration: none; padding: 12px; border-radius: 8px; display: block; margin: 10px auto; font-weight: bold; width: 80%; }
-    </style>
-</head>
-<body>
-    <div class="wallet-info">Wallet: KES <span id="balance">0</span></div>
-    <div class="history-bar" id="pillLog">
-        <span class="pill blue">1.48x</span><span class="pill purple">2.52x</span><span class="pill pink">13.11x</span>
-    </div>
-    <div class="multiplier-display" id="display">1.00x</div>
-    <div class="bet-box">
-        <div class="bet-inputs">
-            <input type="number" id="stake1" value="10">
-            <div style="display: flex; gap: 4px; font-size: 10px; color: #aaa; justify-content: center;"><span>100</span><span>200</span><span>500</span></div>
-        </div>
-        <button class="bet-btn-large" id="btn1" onclick="placeBet()">BET<br><small id="stakeLabel">10.00 KES</small></button>
-    </div>
-    <div class="deposit-section">
-        <p>Pochi: <strong>0797097831</strong></p>
-        <a href="tel:*334*6*1*1*0797097831*10#" class="pochi-btn">PAY KES 10</a>
-        <input type="text" id="txnCode" placeholder="Transaction Code">
-        <button onclick="verifyPochi()" style="background:#444; color:white; border:none; padding:10px; border-radius:5px; width:85%; margin-top:10px;">VERIFY</button>
-    </div>
-    <script>
-        let balance = 0; let count = 1.00; let running = false; let interval; 
-        let currentStake = 0; let isBetActive = false;
-        window.onload = function() { startAutoLoop(); };
-        function startAutoLoop() {
-            if (running) return;
-            count = 1.00; document.getElementById('display').innerText = "1.00x";
-            document.getElementById('display').style.color = "#ff4444";
-            setTimeout(() => {
-                running = true;
-                let crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
-                interval = setInterval(() => {
-                    count += 0.01; document.getElementById('display').innerText = count.toFixed(2) + "x";
-                    if (count >= crashPoint) { endRound(); }
-                }, 100);
-            }, 4000);
-        }
-        function placeBet() {
-            let stake = parseFloat(document.getElementById('stake1').value);
-            if (isBetActive) { cashOut(); return; }
-            if (balance < stake) { alert("Insufficient Funds!"); return; }
-            balance -= stake; currentStake = stake; isBetActive = true;
-            updateUI(); document.getElementById('btn1').innerHTML = "CASH OUT<br><small>WAIT...</small>";
-            document.getElementById('btn1').classList.add('cash-btn');
-        }
-        function cashOut() {
-            if (running && isBetActive) {
-                let win = currentStake * count; balance += win;
-                addPill(count.toFixed(2)); resetBet(); updateUI();
-                alert("Won: KES " + win.toFixed(2));
-            }
-        }
-        function endRound() {
-            clearInterval(interval); running = false;
-            if (isBetActive) { addPill(count.toFixed(2)); resetBet(); }
-            document.getElementById('display').style.color = "#444";
-            setTimeout(startAutoLoop, 3000);
-        }
-        function addPill(val) {
-            let color = (val < 2) ? "blue" : (val < 10) ? "purple" : "pink";
-            let log = document.getElementById('pillLog');
-            let newPill = document.createElement('span');
-            newPill.className = `pill ${color}`; newPill.innerText = val + "x";
-            log.prepend(newPill);
-        }
-        function verifyPochi() {
-            let code = document.getElementById('txnCode').value.trim();
-            if (code.length < 5) { alert("Invalid Code"); return; }
-            balance += 10; updateUI(); alert("KES 10 added!");
-        }
-        function resetBet() {
-            isBetActive = false; document.getElementById('btn1').innerHTML = "BET<br><small>10.00 KES</small>";
-            document.getElementById('btn1').classList.remove('cash-btn');
-        }
-        function updateUI() { document.getElementById('balance').innerText = balance.toFixed(2); }
-    </script>
-</body>
-</html>
+        body { background: #121212; color: white; text-align: center; font-family: 'Arial', sans-serif; margin: 0; overflow-x: hidden; }
+        .header { display: flex; justify-content: space-between; padding: 12px; background: #1e1e1e; font-size: 13px; border-bottom: 2px solid #e91e63; }
+        
+        /* Scrollable Round History */
+        .history-container { display: flex; gap: 8px; padding: 10px; overflow-x: auto; background: #1a1a1a; border-bottom: 1px solid #333; height: 35px; align-items: center; }
+        .pill { padding: 4px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; min-width: 50px; white-space: nowrap; }
+        .blue { color: #3498db; border: 1px solid #3498db; background: rgba(52, 152, 219, 0.1); }
+        .purple { color: #9b59b6; border: 1px solid #9b59b6; background: rgba(155, 89, 182, 0.1); }
+        .pink { color: #e91e63; border: 1px solid #e91e63; background: rgba(233, 30, 99, 0.1); }
+
+        /* Game Stage & Plane Animation */
+        .game-area { height: 260px; position: relative; background: radial-gradient(circle at bottom left, #1e1e1e, #000); overflow: hidden; margin: 10px; border-radius: 15px; border: 1px solid #333; }
+        .plane { position: absolute; bottom: 30px; left: 30px; width: 70px; transition: transform 0.1s linear; display: none; z-index: 5; }
+        .multiplier { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; font-weight: bold; z-index: 10; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        
+        /* Professional Controls */
+        .bet-box { background: #1e1e1e; padding: 20px; border-radius: 25px; width: 92%; margin: 10px auto; border: 1px solid #333; }
+        .tabs { display: flex; justify-content: center; gap: 30px; margin-bottom: 15px; }
+        .tab { color: #888; cursor: pointer; font-weight: bold; font-size: 14px; padding-bottom: 5px; }
+        .tab.active { color: white; border-bottom: 2px solid #28a745; }
+        
+        input[type="number"] { width: 70%; padding: 12px; background: #000; border: 1px solid #444; color: white; border-radius: 10px; text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 15px; }
+        .btn-main { background: #28a745; color: white; border: none; padding: 18px; border-radius: 15px; width: 100%; font-size: 24px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .cashing-out { background: #ffc107 !important; color: black !important; }
+        
+        .whatsapp-btn { background: #25D366; color: white; border: none; padding: 15px; width: 92%; border-radius: 12px; font-weight: bold; margin: 15px 0; cursor: pointer; font-size: 16px; }
+        .online-dot { color: #28a745; margin
