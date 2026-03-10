@@ -5,122 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-pesa Aviator</title>
     <style>
-        body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; padding: 20px; margin: 0; }
-        .wallet-container { background: #333; padding: 10px; border-radius: 10px; margin-bottom: 20px; display: inline-block; width: 90%; }
-        .wallet { font-size: 28px; color: #28a745; font-weight: bold; }
-        .multiplier { font-size: 80px; color: #ff4444; font-weight: bold; margin: 30px 0; text-shadow: 0 0 10px rgba(255, 68, 68, 0.5); }
-        input { padding: 15px; font-size: 18px; width: 85%; border-radius: 8px; border: none; margin-bottom: 10px; background: #fff; color: #000; }
-        button { padding: 18px; font-size: 20px; width: 90%; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 5px; }
-        .bet-btn { background: #28a745; color: white; }
-        .cash-btn { background: #ffc107; color: black; display: none; }
-        .withdraw-btn { background: #dc3545; color: white; }
-        .deposit-section { background: #222; padding: 20px; border-radius: 15px; border: 2px solid #28a745; margin-top: 30px; }
-        .pochi-btn { background: #007bff; color: white; text-decoration: none; padding: 15px; border-radius: 8px; display: block; width: 80%; margin: 15px auto; font-size: 18px; }
-        .history-section { background: #222; padding: 15px; border-radius: 12px; margin-top: 25px; border: 1px solid #444; text-align: left; }
-        .history-title { font-size: 18px; color: #aaa; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; text-align: center; }
-        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; font-size: 14px; }
-        .win-text { color: #28a745; font-weight: bold; }
-        .loss-text { color: #ff4444; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <h1>Real-pesa Aviator</h1>
-    <div class="wallet-container">
-        <div class="wallet">Wallet: KES <span id="balance">0</span></div>
-        <div id="status" style="color: #aaa; margin-top: 5px;">Waiting for next round...</div>
-    </div>
-    <div class="multiplier" id="display">1.00x</div>
-    <input type="number" id="stake" value="10" min="1">
-    <button class="bet-btn" id="startBtn" onclick="placeBet()">PLACE BET</button>
-    <button class="cash-btn" id="cashBtn" onclick="cashOut()">CASH OUT</button>
-    <button class="withdraw-btn" onclick="requestWithdraw()">WITHDRAW FUNDS</button>
+        body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; padding: 10px; margin: 0; overflow-x: hidden; }
+        
+        /* Round History Pill Styling */
+        .history-bar { display: flex; flex-wrap: nowrap; gap: 8px; background: #222; padding: 12px; border-radius: 8px; margin-bottom: 15px; overflow-x: auto; justify-content: flex-start; border: 1px solid #333; }
+        .pill { padding: 4px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; white-space: nowrap; }
+        .blue { color: #3498db; background: rgba(52, 152, 219, 0.15); border: 1px solid #3498db; }
+        .purple { color: #9b59b6; background: rgba(155, 89, 182, 0.15); border: 1px solid #9b59b6; }
+        .pink { color: #e91e63; background: rgba(233, 30, 99, 0.15); border: 1px solid #e91e63; }
 
-    <div class="deposit-section">
-        <h3 style="color: #28a745; margin-top: 0;">M-PESA Deposit</h3>
-        <p>Send stake to Pochi: <strong>0797097831</strong></p>
-        <a href="tel:*334*6*1*1*0797097831*10#" class="pochi-btn">CLICK TO PAY KES 10</a>
-        <input type="text" id="txnCode" placeholder="Paste Transaction Code">
-        <button onclick="verifyPochi()" style="background: #444; color: white;">VERIFY DEPOSIT</button>
-    </div>
-
-    <div class="history-section">
-        <div class="history-title">Recent Rounds</div>
-        <div id="historyLog"><div style="color: #666; font-style: italic; text-align: center;">No games played yet...</div></div>
-    </div>
-
-    <script>
-        let balance = 0; let count = 1.00; let running = false; let interval; 
-        let currentStake = 0; let isPlayerInRound = false;
-
-        window.onload = function() { startAutoLoop(); };
-
-        function verifyPochi() {
-            let code = document.getElementById('txnCode').value.trim();
-            if (code.length < 5) { alert("Invalid Code!"); return; }
-            balance += 10; updateUI(); alert("Success! KES 10 added.");
-            document.getElementById('txnCode').value = "";
-        }
-
-        function startAutoLoop() {
-            if (running) return;
-            count = 1.00;
-            document.getElementById('display').innerText = "1.00x";
-            document.getElementById('display').style.color = "#ff4444";
-            document.getElementById('status').innerText = "Next round starting soon...";
-            
-            setTimeout(() => {
-                running = true;
-                let crashPoint = (Math.random() * 5 + 1.1).toFixed(2);
-                interval = setInterval(() => {
-                    count += 0.01;
-                    document.getElementById('display').innerText = count.toFixed(2) + "x";
-                    if (count >= crashPoint) { endRound(); }
-                }, 100);
-            }, 5000);
-        }
-
-        function placeBet() {
-            let stake = parseFloat(document.getElementById('stake').value);
-            if (balance < stake) { alert("Insufficient Balance!"); return; }
-            balance -= stake; currentStake = stake; isPlayerInRound = true;
-            updateUI();
-            document.getElementById('startBtn').style.display = "none";
-            document.getElementById('cashBtn').style.display = "block";
-        }
-
-        function cashOut() {
-            if (running && isPlayerInRound) {
-                let win = currentStake * count;
-                balance += win; isPlayerInRound = false;
-                updateHistory(count.toFixed(2), "WIN", win.toFixed(2));
-                updateUI(); resetButtons();
-            }
-        }
-
-        function endRound() {
-            clearInterval(interval); running = false;
-            document.getElementById('display').style.color = "#444";
-            if (isPlayerInRound) {
-                updateHistory(count.toFixed(2), "LOSS", currentStake.toFixed(2));
-                isPlayerInRound = false; resetButtons();
-            }
-            setTimeout(startAutoLoop, 3000);
-        }
-
-        function updateHistory(mult, status, amt) {
-            let log = document.getElementById('historyLog');
-            if (log.innerHTML.includes("No games played")) log.innerHTML = "";
-            let color = status === "WIN" ? "win-text" : "loss-text";
-            log.innerHTML = `<div class="history-item"><span>${mult}x</span><span class="${color}">${status}</span><span>KES ${amt}</span></div>` + log.innerHTML;
-        }
-
-        function requestWithdraw() {
-            if (balance <= 0) { alert("Wallet empty!"); return; }
-            window.open("https://wa.me/254797097831?text=" + encodeURIComponent("Withdraw KES " + balance.toFixed(2)));
-        }
-
-        function updateUI() { document.getElementById('balance').innerText = balance.toFixed(2); }
-        function resetButtons() { document.getElementById('startBtn').style.display = "block"; document.getElementById('cashBtn').style.display = "none"; }
-    </script>
-</body>
-</html>
+        /* Multiplier Display */
+        .multiplier-display { font-size: 70px; color: #ff4444; font-weight: bold; margin: 40px 0; text-shadow: 0 0 15px rgba(255, 68, 68, 0.4); }
+        
+        /* Professional Dual Betting Box */
+        .bet-container { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-bottom: 20px; }
+        .bet-box { background: #2c2c2c; padding: 15px; border-radius: 15px; width: 90%; display: flex; align-items: center; justify-content: space-between; border: 1px solid #444; }
+        .bet-inputs { display: flex; flex-direction: column; gap: 8px; width: 45%; }
+        input { padding: 10px; border-radius: 5px; border: none; background: #000; color: #fff; text-align: center; font-weight: bold; }
+        .bet-btn-large { background: #28a745; color: white; border: none; padding: 15px; border-radius: 10px; width: 50%; font-size: 20px; font-weight: bold; cursor: pointer; }
+        .cash
+        
