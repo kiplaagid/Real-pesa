@@ -9,21 +9,20 @@ header{background:var(--p);padding:15px;font-weight:bold;cursor:pointer;border-b
 .logo{font-size:1.6rem;letter-spacing:1px;text-transform:uppercase;font-weight:900;}
 .hist{background:var(--g);padding:10px;font-size:0.75rem;border-bottom:1px solid #333;color:#aaa;}
 .h-item{background:#333;padding:3px 8px;border-radius:10px;color:var(--m);font-weight:bold;margin:0 4px;}
-.game{background:linear-gradient(180deg, #111 0%, #000 100%);margin:15px;height:200px;border-radius:20px;border:1px solid #333;display:flex;flex-direction:column;justify-content:center;position:relative;}
+.game{background:linear-gradient(180deg, #111 0%, #000 100%);margin:15px;height:200px;border-radius:20px;border:1px solid #333;display:flex;flex-direction:column;justify-content:center;}
 #mult{font-size:4.5rem;font-weight:bold;margin:0;}
 #stat{color:#aaa;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;}
 .ctrl{padding:25px 20px;background:var(--g);margin:15px;border-radius:25px;border:1px solid #333;}
 #bal{color:var(--m);font-weight:bold;font-size:1.1rem;margin-bottom:15px;display:block;}
-input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px solid #444;background:#111;color:#fff;font-size:1rem;text-align:center;}
-.btn{width:100%;padding:20px;border:none;border-radius:15px;font-weight:bold;font-size:1.4rem;cursor:pointer;margin-bottom:15px;text-transform:uppercase;transition:0.2s;}
+input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px solid #444;background:#111;color:#fff;text-align:center;}
+.btn{width:100%;padding:20px;border:none;border-radius:15px;font-weight:bold;font-size:1.4rem;cursor:pointer;margin-bottom:15px;text-transform:uppercase;}
 .bet{background:var(--m);color:#fff;box-shadow:0 4px #2e7d32;}
 .cash{background:#fbc02d;color:#000;display:none;}
 .flex-btns{display:flex;gap:12px;}
 .dep-btn{background:var(--p);color:#fff;flex:1;font-size:1rem;padding:15px;border-radius:12px;}
 .wd-btn{background:#25d366;color:#fff;flex:1;font-size:1rem;padding:15px;border-radius:12px;}
 .tx-list{margin:15px;background:var(--g);padding:18px;border-radius:20px;border:1px solid #333;text-align:left;}
-.tx-header{font-weight:bold;color:var(--m);margin-bottom:12px;display:block;}
-.tx-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #222;font-size:0.85rem;}
+.tx-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #222;font-size:0.85rem;}
 .live-tag{background:var(--r);color:white;padding:2px 6px;border-radius:4px;font-size:0.6rem;font-weight:bold;margin-right:8px;animation:pulse 1.5s infinite;}
 .win-c{color:var(--m);font-weight:bold;}
 .footer-box{background:#0a0a0a;padding:20px;border-top:1px solid #222;margin-top:20px;}
@@ -31,7 +30,7 @@ input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px so
 @keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
 </style></head><body>
 
-<header onclick="showAdmin()"><div class="logo">REAL-PESA</div></header>
+<header id="adminTrigger"><div class="logo">REAL-PESA</div></header>
 <div class="hist" id="hist">History:</div>
 
 <div class="game">
@@ -51,7 +50,7 @@ input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px so
 </div>
 
 <div class="tx-list">
-    <span class="tx-header">Recent Transactions</span>
+    <span style="font-weight:bold;color:var(--m);margin-bottom:12px;display:block;">Recent Transactions</span>
     <div id="tx-data"></div>
 </div>
 
@@ -62,50 +61,6 @@ input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px so
 </div>
 
 <script>
-// PASTE FIREBASE CONFIG HERE
-const firebaseConfig = { apiKey: "YOUR_KEY", projectId: "YOUR_ID", appId: "YOUR_APP" };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=false, currentUser="User_"+Math.floor(Math.random()*999);
-const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('betBtn'), cb=document.getElementById('cashBtn'), bl=document.getElementById('bal'), td=document.getElementById('tx-data');
-
-window.onload = () => {
-    loop(); 
-    setInterval(addFakeTx, 5000); 
-    setInterval(triggerWinAlert, 12000);
-};
-
-function loop(){ 
-    isFlying=true; m=1.0; x.style.color="#fff"; s.innerText="FLYING...";
-    nextCrash=(Math.random()*5+1.2).toFixed(2);
-    iv=setInterval(()=>{
-        m+=0.01; x.innerText=m.toFixed(2)+"x";
-        if(m>=nextCrash){
-            clearInterval(iv); isFlying=false; x.innerText="CRASHED!"; x.style.color="var(--r)"; s.innerText="NEXT ROUND SOON...";
-            b.style.display="block"; cb.style.display="none"; myBet=0; setTimeout(loop, 3500);
-        }
-    },100);
-}
-
-function addFakeTx() {
-    const names=["Kamau","Fatuma","Kiprono","Moraa","Achieng","Njeri"], amts=[250, 1200, 4500, 800, 150, 3000];
-    const n=names[Math.floor(Math.random()*names.length)], a=amts[Math.floor(Math.random()*amts.length)];
-    const row=document.createElement("div"); row.className="tx-item";
-    row.innerHTML=`<span><span class="live-tag">LIVE</span> ${n} - Won Round</span><span class="win-c">KES ${a}</span>`;
-    td.insertBefore(row, td.firstChild); if(td.children.length>6) td.lastChild.remove();
-}
-
-function triggerWinAlert() {
-    const n=currentUser, a=(Math.random()*1000+200).toFixed(0);
-    const toast=document.createElement("div");
-    toast.style.cssText=`position:fixed;top:15px;right:15px;background:#1a1a1a;color:#fff;padding:15px;border-radius:12px;border-left:5px solid var(--m);box-shadow:0 10px 20px rgba(0,0,0,0.5);z-index:99;animation:slideIn 0.5s ease-out;`;
-    toast.innerHTML=`🎉 <b>${n}</b> just won <b>KES ${a}</b>!`;
-    document.body.appendChild(toast); setTimeout(()=>toast.remove(), 4000);
-}
-
-function deposit(){ window.location.href="https://wa.me/254797097831?text=Deposit%20ID:%20"+currentUser; }
-function withdraw(){ window.location.href="https://wa.me/254797097831?text=Withdraw%20ID:%20"+currentUser; }
-function placeBet(){ let a=parseFloat(document.getElementById('amt').value); if(wallet<a){alert("Low Balance!");return;} myBet=a; wallet-=a; b.style.display="none"; cb.style.display="block"; }
-function cashOut(){ if(myBet>0 && isFlying){ let w=myBet*m; wallet+=w; b.style.display="block"; cb.style.display="none"; myBet=0; alert("Won KES "+w.toFixed(2)); } }
-</script></body></html>
+// REPLACE WITH YOUR ACTUAL FIREBASE CONFIG FROM SCREENSHOTS
+const firebaseConfig = { apiKey: "YOUR_API_KEY", projectId: "YOUR_PROJECT_ID", appId: "YOUR
+    
