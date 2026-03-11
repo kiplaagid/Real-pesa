@@ -35,5 +35,49 @@ input{width:80%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #4
     <div style="display:flex;gap:10px;"><button class="btn dep-btn" style="flex:1;" onclick="deposit()">Deposit</button><button class="btn wd-btn" style="flex:1;" onclick="withdraw()">Withdraw</button></div>
 </div>
 <div class="tx-list"><div style="font-weight:bold;margin-bottom:10px;color:var(--m);">Recent Transactions</div><div id="tx-data"></div></div>
-<div class
+<div class="footer-box">
+    <div style="color: #66bb6a; font-weight: bold; font-size: 0.9rem;">OFFICIAL POCHI LA BIASHARA</div>
+    <div style="font-size: 1.1rem; margin: 5px 0;">0797097831</div>
+    <div style="font-size: 0.7rem; color: #888;">Send funds then WhatsApp confirmed message for approval.</div>
+</div>
+<script>
+// --- PASTE YOUR ACTUAL FIREBASE CONFIG KEYS HERE ---
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_ID",
+  storageBucket: "YOUR_BUCKET",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=false, txs=[], currentUser="";
+const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('betBtn'), cb=document.getElementById('cashBtn'), bl=document.getElementById('bal'), td=document.getElementById('tx-data'), music=document.getElementById('bgMusic');
+
+async function login() {
+    let phone = document.getElementById('u-phone').value.trim();
+    let pass = document.getElementById('u-pass').value.trim();
+    if (phone.length < 10 || pass.length < 4) { alert("Invalid phone or password!"); return; }
+
+    currentUser = phone;
+    const docRef = db.collection("players").doc(currentUser);
+    const doc = await docRef.get();
+
+    if (doc.exists) {
+        if (doc.data().password !== pass) { alert("Wrong password!"); return; }
+        wallet = doc.data().balance;
+        txs = doc.data().transactions || [];
+    } else {
+        await docRef.set({ phone: phone, password: pass, balance: 0, transactions: [] });
+        wallet = 0;
+    }
+    document.getElementById('login-scr').style.display='none';
+    music.play().catch(()=>{}); 
+    loop();
+    db.collection("players").doc(currentUser).onSnapshot((doc) => { if(doc.exists) { wallet = doc.data().balance; bl.innerText="KES "+wallet.toFixed(2); renderTxs(); }});
+}
+
+async function updateDb() { await db.collection("players").doc(currentUser).update({ balance: wallet, transactions: txs }); }
+function renderTxs(){ td.innerHTML = txs.map(t => `<div class="tx-
     
