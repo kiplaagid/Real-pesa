@@ -68,9 +68,11 @@
     const historyBar = document.getElementById('historyBar');
     const profitDisplay = document.getElementById('profit-tracker');
     const winnersList = document.getElementById('winnersList');
+    
     let multiplier = 1.00, isFlying = false, betPlaced = false, balance = parseInt(localStorage.getItem('realPesaBalance')) || 1000;
     let history = JSON.parse(localStorage.getItem('realPesaHistory')) || [], currentBet = 0, crashPoint = 0, frame = 0;
     const fakePlayers = ["Musa_K", "Jabet_254", "Otieno_Pro", "SarahW", "Kamau_G", "Liz_B", "Brian_K", "Dancan_M", "Mercy_T", "Kiptoo"];
+
     function updateUI() {
         balDisplay.innerText = balance;
         historyBar.innerHTML = '';
@@ -81,6 +83,7 @@
             historyBar.appendChild(span);
         });
     }
+
     function addWinner() {
         if (!isFlying) return;
         const name = fakePlayers[Math.floor(Math.random() * fakePlayers.length)];
@@ -93,31 +96,38 @@
         winnersList.prepend(row);
         if (winnersList.children.length > 5) winnersList.removeChild(winnersList.lastChild);
     }
+
     function drawGraph() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
         ctx.strokeStyle = "#ff0055"; ctx.lineWidth = 4; ctx.moveTo(0, canvas.height);
+        // Drawing curve at a slower rate
         for (let i = 0; i < frame; i++) {
-            let x = (i / 200) * canvas.width;
-            let y = canvas.height - Math.pow(i / 50, 2);
+            let x = (i / 400) * canvas.width;
+            let y = canvas.height - Math.pow(i / 100, 2);
             ctx.lineTo(x, y);
         }
         ctx.stroke();
-        let lastX = (frame / 200) * canvas.width, lastY = canvas.height - Math.pow(frame / 50, 2);
+        let lastX = (frame / 400) * canvas.width, lastY = canvas.height - Math.pow(frame / 100, 2);
         ctx.fillStyle = "white"; ctx.font = "24px Arial"; ctx.fillText("✈️", lastX - 10, lastY + 10);
     }
+
     function gameLoop() {
         if (!isFlying) return;
         frame++;
-        multiplier += 0.005 + (frame / 7000);
+        // SLOWED DOWN: Increments are smaller now
+        multiplier += 0.002 + (frame / 15000);
         multDisplay.innerText = multiplier.toFixed(2) + "x";
+        
         if (betPlaced) {
             let currentProfit = Math.floor(currentBet * multiplier);
             profitDisplay.innerText = `Profit: Ksh ${currentProfit}`;
             profitDisplay.style.display = "block";
         }
-        if (frame % 120 === 0 && Math.random() > 0.5) addWinner();
+
+        if (frame % 200 === 0 && Math.random() > 0.5) addWinner();
         drawGraph();
+
         if (multiplier >= crashPoint) {
             isFlying = false;
             multDisplay.style.color = "#ff0055";
@@ -131,6 +141,7 @@
             requestAnimationFrame(gameLoop);
         }
     }
+
     function startWaitingPeriod() {
         isFlying = false; betPlaced = false; betBtn.disabled = false; betBtn.innerText = "PLACE BET";
         cashBtn.disabled = true; profitDisplay.style.display = "none"; winnersList.innerHTML = '';
@@ -141,14 +152,17 @@
             if (countdown < 0) { clearInterval(timer); startFlight(); }
         }, 1000);
     }
+
     function startFlight() {
         isFlying = true; frame = 0; multiplier = 1.00;
+        // Crash point logic remains random but feels better with slow speed
         crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
         statusText.innerText = betPlaced ? "In Flight!" : "Watching Flight...";
         if (betPlaced) cashBtn.disabled = false;
         multDisplay.style.color = "white";
         gameLoop();
     }
+
     betBtn.addEventListener('click', () => {
         let amt = parseInt(betInput.value);
         if (amt > balance || amt <= 0) return alert("Check Balance!");
@@ -157,6 +171,7 @@
         localStorage.setItem('realPesaBalance', balance);
         updateUI();
     });
+
     cashBtn.addEventListener('click', () => {
         if (isFlying && betPlaced) {
             let win = Math.floor(currentBet * multiplier);
@@ -171,10 +186,10 @@
             updateUI();
         }
     });
+
     canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
     updateUI();
     startWaitingPeriod();
 </script>
 </body>
-    </html>
-    
+</html>
