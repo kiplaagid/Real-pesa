@@ -5,104 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-pesa Aviator</title>
     <style>
-        body { background: #1a1a1a; color: white; font-family: 'Arial', sans-serif; text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        #game-container { background: #222; padding: 25px; border-radius: 20px; width: 90%; max-width: 360px; border: 3px solid #ff0055; box-shadow: 0 0 20px rgba(255, 0, 85, 0.3); }
-        .wallet-section { background: #333; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; font-weight: bold; color: #00ff88; }
-        #multiplier { font-size: 4rem; color: #ff0055; margin: 20px 0; font-weight: bold; }
-        .controls { display: flex; flex-direction: column; gap: 10px; }
-        input { padding: 12px; border-radius: 8px; border: none; background: #444; color: white; text-align: center; font-size: 1.1rem; }
-        button { padding: 15px; font-size: 1.2rem; cursor: pointer; border-radius: 12px; border: none; font-weight: bold; }
+        body { background: #0b0b0b; color: white; font-family: 'Arial', sans-serif; text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #game-container { background: #1a1a1a; padding: 20px; border-radius: 15px; width: 95%; max-width: 380px; border: 2px solid #333; }
+        .header { display: flex; justify-content: space-between; padding: 10px; background: #222; border-radius: 10px; margin-bottom: 10px; color: #00ff88; font-weight: bold; }
+        #canvas-wrapper { position: relative; background: #000; border-radius: 10px; height: 200px; margin-bottom: 15px; overflow: hidden; border: 1px solid #333; }
+        canvas { width: 100%; height: 100%; }
+        #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3.5rem; font-weight: bold; color: white; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); z-index: 10; }
+        .controls { background: #222; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px; }
+        input { padding: 12px; border-radius: 5px; border: none; background: #333; color: white; text-align: center; font-size: 1.2rem; }
+        button { padding: 15px; font-size: 1.1rem; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; text-transform: uppercase; }
         #betBtn { background: #28a745; color: white; }
-        #cashOutBtn { background: #ffc107; color: black; }
+        #cashBtn { background: #ffc107; color: black; }
         button:disabled { background: #444; color: #777; cursor: not-allowed; }
-        #status { margin-top: 15px; color: #aaa; font-size: 0.9rem; min-height: 20px; }
+        #status { margin-top: 10px; font-size: 0.9rem; color: #888; height: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <div class="wallet-section">
-            <span>BALANCE:</span>
-            <span>Ksh <span id="balance">1000</span></span>
-        </div>
-        
-        <h2 style="color:#888; margin:0;">REAL-PESA</h2>
-        <div id="multiplier">1.00x</div>
-        
-        <div class="controls">
-            <input type="number" id="betAmount" value="50" min="10">
-            <button id="betBtn">PLACE BET</button>
-            <button id="cashOutBtn" disabled>CASH OUT</button>
-        </div>
-
-        <div id="status">Ready to play</div>
+<div id="game-container">
+    <div class="header">
+        <span>REAL-PESA</span>
+        <span>Ksh <span id="balance">1000</span></span>
     </div>
 
-    <script>
-        let multiplier = 1.00;
-        let isPlaying = false;
-        let balance = 1000;
-        let currentBet = 0;
-        let crashPoint = 0;
-        let interval;
+    <div id="canvas-wrapper">
+        <div id="multiplier">1.00x</div>
+        <canvas id="gameCanvas"></canvas>
+    </div>
 
-        const multDisplay = document.getElementById('multiplier');
-        const balDisplay = document.getElementById('balance');
-        const betInput = document.getElementById('betAmount');
-        const betBtn = document.getElementById('betBtn');
-        const cashBtn = document.getElementById('cashOutBtn');
-        const statusText = document.getElementById('status');
+    <div class="controls">
+        <input type="number" id="betAmount" value="100" min="10">
+        <button id="betBtn">BET</button>
+        <button id="cashBtn" disabled>CASH OUT</button>
+    </div>
+    <div id="status">Place your bet to start</div>
+</div>
 
-        function startRound() {
-            currentBet = parseInt(betInput.value);
-            if (currentBet > balance) {
-                statusText.innerText = "Insufficient Balance!";
-                return;
-            }
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const multDisplay = document.getElementById('multiplier');
+    const balDisplay = document.getElementById('balance');
+    const betInput = document.getElementById('betAmount');
+    const betBtn = document.getElementById('betBtn');
+    const cashBtn = document.getElementById('cashBtn');
+    const statusText = document.getElementById('status');
 
-            balance -= currentBet;
+    let multiplier = 1.00;
+    let isPlaying = false;
+    let balance = 1000;
+    let currentBet = 0;
+    let crashPoint = 0;
+    let animationId;
+    let frame = 0;
+
+    function resize() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function drawGraph() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.strokeStyle = "#ff0055";
+        ctx.lineWidth = 4;
+        ctx.moveTo(0, canvas.height);
+
+        for (let i = 0; i < frame; i++) {
+            let x = (i / 200) * canvas.width;
+            let y = canvas.height - Math.pow(i / 50, 2);
+            ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Draw Plane Icon
+        let lastX = (frame / 200) * canvas.width;
+        let lastY = canvas.height - Math.pow(frame / 50, 2);
+        ctx.fillStyle = "red";
+        ctx.font = "24px Arial";
+        ctx.fillText("✈️", lastX - 10, lastY + 10);
+    }
+
+    function update() {
+        if (!isPlaying) return;
+
+        frame++;
+        multiplier += 0.005 + (frame / 5000); // Accelerating speed
+        multDisplay.innerText = multiplier.toFixed(2) + "x";
+
+        drawGraph();
+
+        if (multiplier >= crashPoint) {
+            endRound(false);
+        } else {
+            animationId = requestAnimationFrame(update);
+        }
+    }
+
+    function startRound() {
+        currentBet = parseInt(betInput.value);
+        if (currentBet > balance || currentBet <= 0) {
+            statusText.innerText = "Check your balance!";
+            return;
+        }
+
+        balance -= currentBet;
+        balDisplay.innerText = balance;
+        
+        multiplier = 1.00;
+        frame = 0;
+        isPlaying = true;
+        crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
+        
+        betBtn.disabled = true;
+        cashBtn.disabled = false;
+        statusText.innerText = "Flying...";
+        multDisplay.style.color = "white";
+
+        update();
+    }
+
+    function endRound(won) {
+        isPlaying = false;
+        cancelAnimationFrame(animationId);
+        betBtn.disabled = false;
+        cashBtn.disabled = true;
+
+        if (won) {
+            let win = Math.floor(currentBet * multiplier);
+            balance += win;
             balDisplay.innerText = balance;
-            
-            multiplier = 1.00;
-            isPlaying = true;
-            crashPoint = (Math.random() * 5 + 1.05).toFixed(2);
-            
-            betBtn.disabled = true;
-            cashBtn.disabled = false;
-            multDisplay.style.color = "#ff0055";
-            statusText.innerText = "Flying...";
-            
-            interval = setInterval(() => {
-                multiplier += 0.01;
-                multDisplay.innerText = multiplier.toFixed(2) + "x";
-                
-                if (multiplier >= crashPoint) {
-                    endRound(false);
-                }
-            }, 60); 
+            multDisplay.style.color = "#00ff88";
+            statusText.innerText = "WIN! Received Ksh " + win;
+        } else {
+            multDisplay.style.color = "#ff4444";
+            multDisplay.innerText = "FLEW AWAY!";
+            statusText.innerText = "Crashed at " + multiplier.toFixed(2) + "x";
         }
+    }
 
-        function endRound(won) {
-            clearInterval(interval);
-            isPlaying = false;
-            betBtn.disabled = false;
-            cashBtn.disabled = true;
+    betBtn.addEventListener('click', startRound);
+    cashBtn.addEventListener('click', () => { if (isPlaying) endRound(true); });
+</script>
 
-            if (won) {
-                let winAmount = Math.floor(currentBet * multiplier);
-                balance += winAmount;
-                balDisplay.innerText = balance;
-                multDisplay.style.color = "#00ff88";
-                statusText.innerText = "You Won Ksh " + winAmount + "!";
-            } else {
-                multDisplay.style.color = "#ff4444";
-                multDisplay.innerText = "CRASHED!";
-                statusText.innerText = "Lost Ksh " + currentBet;
-            }
-        }
-
-        betBtn.addEventListener('click', startRound);
-        cashBtn.addEventListener('click', () => { if (isPlaying) endRound(true); });
-    </script>
 </body>
 </html>
