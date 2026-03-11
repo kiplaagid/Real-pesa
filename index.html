@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-pesa Aviator Pro</title>
     <style>
-        body { background: #0b0b0b; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        body { background: #0b0b0b; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
         #game-container { background: #1a1a1a; padding: 20px; border-radius: 15px; width: 95%; max-width: 380px; border: 2px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .header { display: flex; justify-content: space-between; padding: 12px; background: #222; border-radius: 10px; margin-bottom: 10px; color: #00ff88; font-weight: bold; border: 1px solid #333; }
         #canvas-wrapper { position: relative; background: radial-gradient(circle, #111 0%, #000 100%); border-radius: 10px; height: 180px; margin-bottom: 10px; overflow: hidden; border: 1px solid #444; }
@@ -21,11 +21,12 @@
         #resetBtn { background: transparent; color: #555; font-size: 0.7rem; margin-top: 10px; border: 1px solid #333; padding: 5px; width: 100px; align-self: center; }
         button:disabled { background: #333 !important; color: #666 !important; cursor: not-allowed; opacity: 0.5; }
         #status { margin-top: 8px; font-size: 0.9rem; color: #aaa; min-height: 1.2rem; font-style: italic; }
+        #fairness-info { font-size: 0.6rem; color: #444; margin-top: 5px; word-break: break-all; }
     </style>
 </head>
 <body>
 
-<div id="game-container" style="display: flex; flex-direction: column;">
+<div id="game-container">
     <div class="header">
         <span>REAL-PESA</span>
         <span>Ksh <span id="balance">1000</span></span>
@@ -43,8 +44,9 @@
         <button id="betBtn">PLACE BET</button>
         <button id="cashBtn" disabled>CASH OUT</button>
         <button id="resetBtn" onclick="resetGame()">Reset Balance</button>
+        <div id="status">Ready to fly</div>
+        <div id="fairness-info">Hash: <span id="roundHash">None</span></div>
     </div>
-    <div id="status">Ready to fly</div>
 </div>
 
 <script>
@@ -57,6 +59,7 @@
     const cashBtn = document.getElementById('cashBtn');
     const statusText = document.getElementById('status');
     const historyBar = document.getElementById('historyBar');
+    const hashDisplay = document.getElementById('roundHash');
 
     const winSound = new Audio('https://www.soundjay.com/buttons/sounds/button-37a.mp3');
 
@@ -94,7 +97,6 @@
         ctx.beginPath();
         ctx.strokeStyle = "#ff0055";
         ctx.lineWidth = 4;
-        ctx.setLineDash([]);
         ctx.moveTo(0, canvas.height);
 
         for (let i = 0; i < frame; i++) {
@@ -111,6 +113,13 @@
         ctx.fillText("✈️", lastX - 10, lastY + 10);
     }
 
+    async function generateHash(value) {
+        const msgUint8 = new TextEncoder().encode(value.toString());
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
     function update() {
         if (!isPlaying) return;
         frame++;
@@ -120,4 +129,75 @@
 
         if (multiplier >= crashPoint) {
             endRound(false);
-    
+        } else {
+            animationId = requestAnimationFrame(update);
+        }
+    }
+
+    async function startRound() {
+        currentBet = parseInt(betInput.value);
+        if (currentBet > balance || currentBet <= 0) {
+            statusText.innerText = "Check your balance!";
+            return;
+        }
+
+        let r = Math.random();
+        crashPoint = r < 0.15 ? 1.00 : (Math.random() * 4 + 1.1).toFixed(2);
+        
+        const hash = await generateHash(crashPoint + Date.now());
+        hashDisplay.innerText = hash.substring(0, 20) + "...";
+
+        balance -= currentBet;
+        saveData();
+        
+        multiplier = 1.00;
+        frame = 0;
+        isPlaying = true;
+        betBtn.disabled = true;
+        cashBtn.disabled = false;
+        statusText.innerText = "In Flight...";
+        multDisplay.style.color = "white";
+        update();
+    }
+
+    function endRound(won) {
+        isPlaying = false;
+        cancelAnimationFrame(animationId);
+        betBtn.disabled = false;
+        cashBtn.disabled = true;
+
+        if (won) {
+            winSound.play();
+            let win = Math.floor(currentBet * multiplier);
+            balance += win;
+            statusText.innerText = "WIN! Received Ksh " + win;
+            multDisplay.style.color = "#00ff88";
+        } else {
+            history.push(multiplier.toFixed(2));
+            if (history.length > 10) history.shift();
+            statusText.innerText = "Crashed at " + multiplier.toFixed(2) + "x";
+            multDisplay.style.color = "#ff4444";
+            multDisplay.innerText = "FLEW AWAY!";
+        }
+        saveData();
+        updateUI();
+    }
+
+    function saveData() {
+        localStorage.setItem('realPesaBalance', balance);
+        localStorage.setItem('realPesaHistory', JSON.stringify(history));
+    }
+
+    function resetGame() {
+        if (confirm("Reset balance to Ksh 1000?")) {
+            balance = 1000;
+            saveData();
+            updateUI();
+        }
+    }
+
+    betBtn.addEventListener('click', startRound);
+    cashBtn.addEventListener('click', () => { if (isPlaying) endRound(true); });
+</script>
+</body>
+</html>
