@@ -13,7 +13,7 @@ input{width:90%;padding:10px;margin:10px 0;border-radius:8px;border:none;backgro
 <div class="game"><div id="mult">1.00x</div><div id="stat" style="color:#888;">Next Round Starting...</div></div>
 <div class="ctrl"><div>Wallet: <span id="bal">KES 0.00</span></div><input type="number" id="amt" placeholder="Bet Amount">
 <button id="btn" class="btn bet" onclick="action()">PLACE BET</button></div>
-<div class="chat"><div id="msgs"><div class="msg"><b>System:</b> Welcome to Real-pesa!</div></div>
+<div class="chat"><div id="msgs"><div class="msg"><b>System:</b> Welcome! Deposit via Pochi: 0797097831</div></div>
 <input type="text" id="c-in" placeholder="Say something..." onkeydown="if(event.key==='Enter')sendChat()" style="width:85%;margin:5px auto;padding:8px;"></div>
 <footer style="font-size:0.7rem;color:#888;padding-bottom:10px;">Pochi: 0797097831</footer>
 <script>
@@ -26,5 +26,24 @@ function loop(){
     iv=setInterval(()=>{
         m+=0.01; x.innerText=m.toFixed(2)+"x";
         if(m>=crash){clearInterval(iv); isFlying=false; addH(m.toFixed(2));
-            x.innerText="FLEW AWAY!"; x.style.color="
+            x.innerText="FLEW AWAY!"; x.style.color="var(--r)"; s.innerText="Waiting...";
+            if(myBet>0){ b.innerText="PLACE BET"; b.className="btn bet"; myBet=0; }
+            setTimeout(loop, 3000);
+        }
+    },100);
+}
+function action(){
+    if(myBet===0 && isFlying && m < 1.15){
+        myBet=document.getElementById('amt').value||10; b.innerText="CASH OUT"; b.className="btn cash";
+    }else if(myBet>0 && isFlying){
+        let win = (myBet * m).toFixed(2); alert("Won KES "+win);
+        b.innerText="PLACE BET"; b.className="btn bet"; myBet=0;
+    }
+}
+function sendChat(){
+    const i=document.getElementById('c-in'), m=document.getElementById('msgs');
+    if(i.value){ m.innerHTML+=`<div class="msg"><b>User:</b> ${i.value}</div>`; m.scrollTop=m.scrollHeight; i.value=''; }
+}
+loop();
+</script></body></html>
     
