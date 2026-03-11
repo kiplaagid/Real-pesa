@@ -7,22 +7,22 @@
     <style>
         :root { --p: #1b5e20; --m: #4caf50; --g: #f4f4f4; }
         body { font-family: sans-serif; margin: 0; background: var(--g); text-align: center; }
-        .header { background: var(--p); color: white; padding: 20px; }
-        .balance { background: white; margin: -15px auto 20px; width: 80%; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .card { background: white; padding: 20px; border-radius: 15px; margin: 10px; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        header { background: var(--p); color: white; padding: 20px; }
+        .balance { background: white; margin: -15px auto 20px; width: 85%; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .card { background: white; padding: 20px; border-radius: 15px; margin: 15px; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .box { background: #e8f5e9; padding: 15px; border-radius: 10px; border-left: 5px solid var(--m); }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; background: var(--m); color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; }
+        .btn { width: 100%; background: var(--m); color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="header"><h1>Real-pesa</h1></div>
+    <header><h1>Real-pesa</h1></header>
     <div class="balance">
-        <small>Available Balance</small>
+        <p style="margin:0; color:#777;">Balance</p>
         <div style="font-size: 2rem; font-weight: bold; color: var(--p);">KES 0.00</div>
     </div>
     <div class="card">
-        <h3>Deposit to Pochi</h3>
+        <h3 style="margin-top:0;">Deposit to Pochi</h3>
         <div class="box">
             <strong>Number: 0797097831</strong><br>
             <small>Lipa na M-PESA > Pochi la Biashara</small>
@@ -33,6 +33,6 @@
             <button type="submit" class="btn">Confirm Payment</button>
         </form>
     </div>
-    <footer style="font-size: 0.7rem; color: #999; margin-top: 20px;">&copy; 2026 Real-pesa</footer>
+    <footer style="font-size: 0.7rem; color: #999; margin-top: 20px;">&copy; 2026 Real-pesa | Kiplangat Gideon</footer>
 </body>
 </html>
