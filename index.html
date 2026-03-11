@@ -19,6 +19,7 @@
         #betBtn { background: #28a745; color: white; }
         #cashBtn { background: #ffc107; color: black; }
         #status { margin-top: 8px; font-size: 1rem; color: #ffc107; min-height: 1.2rem; font-weight: bold; }
+        #profit-tracker { color: #00ff88; font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; display: none; }
         .pochi-box { background: #111; padding: 12px; border-radius: 8px; border: 1px dashed #00ff88; font-size: 0.9rem; color: #00ff88; line-height: 1.4; }
     </style>
 </head>
@@ -38,10 +39,11 @@
     </div>
 
     <div class="controls">
+        <div id="profit-tracker">Profit: Ksh 0</div>
         <input type="number" id="betAmount" value="100" step="10">
         <button id="betBtn">PLACE BET</button>
         <button id="cashBtn" disabled>CASH OUT</button>
-        <div id="status">Loading Game...</div>
+        <div id="status">Loading...</div>
     </div>
 
     <div class="action-section">
@@ -63,6 +65,7 @@
     const cashBtn = document.getElementById('cashBtn');
     const statusText = document.getElementById('status');
     const historyBar = document.getElementById('historyBar');
+    const profitDisplay = document.getElementById('profit-tracker');
 
     let multiplier = 1.00;
     let isFlying = false;
@@ -109,12 +112,21 @@
         multiplier += 0.005 + (frame / 7000);
         multDisplay.innerText = multiplier.toFixed(2) + "x";
         multDisplay.style.color = "white";
+        
+        // --- PROFIT CALCULATION ---
+        if (betPlaced) {
+            let currentProfit = Math.floor(currentBet * multiplier);
+            profitDisplay.innerText = `Profit: Ksh ${currentProfit}`;
+            profitDisplay.style.display = "block";
+        }
+
         drawGraph();
 
         if (multiplier >= crashPoint) {
             isFlying = false;
             multDisplay.style.color = "#ff0055";
-            statusText.innerText = `Crashed @ ${multiplier.toFixed(2)}x`;
+            statusText.innerText = `FLEW AWAY! @ ${multiplier.toFixed(2)}x`;
+            profitDisplay.style.display = "none";
             history.push(multiplier.toFixed(2));
             localStorage.setItem('realPesaHistory', JSON.stringify(history));
             updateUI();
@@ -130,6 +142,7 @@
         betBtn.disabled = false;
         betBtn.innerText = "PLACE BET";
         cashBtn.disabled = true;
+        profitDisplay.style.display = "none";
         let countdown = 5;
         
         let timer = setInterval(() => {
@@ -146,15 +159,15 @@
         isFlying = true;
         frame = 0;
         multiplier = 1.00;
-        crashPoint = (Math.random() * 3.5 + 1.1).toFixed(2);
-        statusText.innerText = "Plane is Airborne!";
+        crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
+        statusText.innerText = betPlaced ? "In Flight! Ready to cash out?" : "Watching Flight...";
         if (betPlaced) cashBtn.disabled = false;
         gameLoop();
     }
 
     betBtn.addEventListener('click', () => {
         let amt = parseInt(betInput.value);
-        if (amt > balance || amt <= 0) return alert("Low balance!");
+        if (amt > balance || amt <= 0) return alert("Check Balance!");
         balance -= amt;
         currentBet = amt;
         betPlaced = true;
@@ -170,7 +183,7 @@
             balance += win;
             betPlaced = false;
             cashBtn.disabled = true;
-            statusText.innerText = `Won Ksh ${win}!`;
+            statusText.innerText = `WON: Ksh ${win}!`;
             localStorage.setItem('realPesaBalance', balance);
             updateUI();
         }
