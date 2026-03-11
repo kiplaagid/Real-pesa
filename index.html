@@ -3,56 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-pesa | Home</title>
+    <title>Real-pesa | Digital Finance</title>
     <style>
+        :root {
+            --primary: #1b5e20;
+            --accent: #2e7d32;
+            --light: #ffffff;
+            --gray: #f8f9fa;
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+            background-color: var(--gray);
+            color: #333;
+        }
+        nav {
+            background: var(--primary);
+            padding: 15px;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 60px 20px;
             text-align: center;
         }
         .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            max-width: 90%;
+            max-width: 800px;
+            margin: -40px auto 40px;
+            padding: 0 15px;
         }
-        h1 { color: #2e7d32; }
+        .main-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
         .btn {
             display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #2e7d32;
+            background: var(--accent);
             color: white;
+            padding: 12px 35px;
+            border-radius: 30px;
             text-decoration: none;
-            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+            transition: 0.3s;
+        }
+        .btn:hover { background: var(--primary); }
+        .services-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .service-item {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid var(--primary);
+            text-align: left;
+        }
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #888;
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Welcome to Real-pesa</h1>
-        <p>Your web application is now active and running.</p>
-        <a href="#" class="btn">Get Started</a>
+    <nav>Real-pesa</nav>
 
-        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
-        <div style="text-align: left;">
-            <p><strong>Available Services:</strong></p>
-            <ul style="list-style: none; padding: 0;">
-                <li>✅ Secure Transactions</li>
-                <li>✅ Quick Payments</li>
-                <li>✅ Account Management</li>
-            </ul>
+    <div class="hero">
+        <h1>Welcome to the Future</h1>
+        <p>Reliable. Secure. Fast.</p>
+    </div>
+
+    <div class="container">
+        <div class="main-card">
+            <h2>Your Dashboard</h2>
+            <p>Your web application is now active and ready for development.</p>
+            <a href="#" class="btn">Launch App</a>
+
+            <div class="services-grid">
+                <div class="service-item">
+                    <strong>🛡️ Secure Transactions</strong>
+                    <p style="margin:5px 0 0; font-size:0.9rem;">End-to-end encrypted financial processing.</p>
+                </div>
+                <div class="service-item">
+                    <strong>⚡ Quick Payments</strong>
+                    <p style="margin:5px 0 0; font-size:0.9rem;">Send and receive funds in seconds.</p>
+                </div>
+                <div class="service-item">
+                    <strong>📊 Management</strong>
+                    <p style="margin:5px 0 0; font-size:0.9rem;">Track your history with built-in analytics.</p>
+                </div>
+            </div>
         </div>
     </div>
+
+    <footer>
+        &copy; 2026 Real-pesa. Created by Kiplangat Gideon.
+    </footer>
 
 </body>
 </html>
