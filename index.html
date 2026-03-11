@@ -51,9 +51,14 @@
     const cashBtn = document.getElementById('cashBtn');
     const statusText = document.getElementById('status');
 
+    // Win Sound Effect
+    const winSound = new Audio('https://www.soundjay.com/buttons/sounds/button-37a.mp3');
+
     let multiplier = 1.00;
     let isPlaying = false;
-    let balance = 1000;
+    let balance = parseInt(localStorage.getItem('realPesaBalance')) || 1000;
+    balDisplay.innerText = balance;
+
     let currentBet = 0;
     let crashPoint = 0;
     let animationId;
@@ -80,7 +85,6 @@
         }
         ctx.stroke();
 
-        // Draw Plane Icon
         let lastX = (frame / 200) * canvas.width;
         let lastY = canvas.height - Math.pow(frame / 50, 2);
         ctx.fillStyle = "red";
@@ -90,11 +94,9 @@
 
     function update() {
         if (!isPlaying) return;
-
         frame++;
-        multiplier += 0.005 + (frame / 5000); // Accelerating speed
+        multiplier += 0.005 + (frame / 5000);
         multDisplay.innerText = multiplier.toFixed(2) + "x";
-
         drawGraph();
 
         if (multiplier >= crashPoint) {
@@ -112,7 +114,7 @@
         }
 
         balance -= currentBet;
-        balDisplay.innerText = balance;
+        saveBalance();
         
         multiplier = 1.00;
         frame = 0;
@@ -123,7 +125,6 @@
         cashBtn.disabled = false;
         statusText.innerText = "Flying...";
         multDisplay.style.color = "white";
-
         update();
     }
 
@@ -134,9 +135,10 @@
         cashBtn.disabled = true;
 
         if (won) {
+            winSound.play(); // Play sound on win
             let win = Math.floor(currentBet * multiplier);
             balance += win;
-            balDisplay.innerText = balance;
+            saveBalance();
             multDisplay.style.color = "#00ff88";
             statusText.innerText = "WIN! Received Ksh " + win;
         } else {
@@ -146,9 +148,13 @@
         }
     }
 
+    function saveBalance() {
+        balDisplay.innerText = balance;
+        localStorage.setItem('realPesaBalance', balance);
+    }
+
     betBtn.addEventListener('click', startRound);
     cashBtn.addEventListener('click', () => { if (isPlaying) endRound(true); });
 </script>
-
 </body>
 </html>
