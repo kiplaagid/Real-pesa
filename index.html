@@ -18,18 +18,18 @@
         button { padding: 14px; font-size: 1.1rem; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; text-transform: uppercase; transition: 0.2s; width: 100%; }
         #betBtn { background: #28a745; color: white; }
         #cashBtn { background: #ffc107; color: black; }
-        #whatsappBtn { background: #25D366; color: white; text-decoration: none; display: block; padding: 10px; border-radius: 8px; font-size: 0.9rem; }
+        .whatsapp-btn { text-decoration: none; display: block; padding: 10px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; color: white; }
+        #depositBtn { background: #25D366; }
+        #withdrawBtn { background: #007bff; margin-top: 5px; }
         #status { margin-top: 8px; font-size: 1rem; color: #ffc107; min-height: 1.2rem; font-weight: bold; }
         #profit-tracker { color: #00ff88; font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; display: none; }
         .pochi-box { background: #111; padding: 12px; border-radius: 8px; border: 1px dashed #00ff88; font-size: 0.9rem; color: #00ff88; line-height: 1.4; }
-        .winners-title { font-size: 0.8rem; color: #aaa; text-align: left; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        #winnersList { max-height: 250px; overflow-y: auto; scrollbar-width: thin; }
-        .winner-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 6px 0; border-bottom: 1px solid #2a2a2a; animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        #winnersList { max-height: 200px; overflow-y: auto; text-align: left; }
+        .winner-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 6px 0; border-bottom: 1px solid #2a2a2a; }
         .win-amt { color: #00ff88; font-weight: bold; }
         .promo-section { border-top: 1px solid #333; padding-top: 10px; margin-top: 5px; }
-        #promoInput { font-size: 0.8rem; padding: 8px; margin-bottom: 5px; }
-        #promoBtn { background: #444; font-size: 0.8rem; padding: 8px; }
+        #promoInput { font-size: 0.8rem; padding: 8px; margin-bottom: 5px; width: 80%; }
+        #promoBtn { background: #444; font-size: 0.8rem; padding: 8px; width: 100%; }
     </style>
 </head>
 <body>
@@ -48,25 +48,23 @@
         <input type="number" id="betAmount" value="10" step="10">
         <button id="betBtn">PLACE BET</button>
         <button id="cashBtn" disabled>CASH OUT</button>
-        <div id="status">Loading...</div>
+        <div id="status">Starting Engine...</div>
     </div>
     <div class="winners-section">
-        <div class="winners-title">LIVE BETS / TOP WINNERS</div>
+        <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 5px;">LIVE BETS / TOP WINNERS</div>
         <div id="winnersList"></div>
     </div>
     <div class="action-section">
-        <strong style="color: #007bff; font-size: 0.9rem;">DEPOSIT & HELP</strong>
         <div class="pochi-box">
             Lipa na M-PESA Pochi: <br>
             <strong style="font-size: 1.2rem;">0797097831</strong>
         </div>
+        <a id="depositBtn" class="whatsapp-btn" href="https://wa.me/254797097831?text=I%20want%20to%20deposit" target="_blank">DEPOSIT VIA WHATSAPP</a>
+        <a id="withdrawBtn" class="whatsapp-btn" href="https://wa.me/254797097831?text=I%20want%20to%20withdraw%20my%20winnings" target="_blank">WITHDRAW WINNINGS</a>
         <div class="promo-section">
-            <input type="text" id="promoInput" placeholder="Enter Deposit Code">
+            <input type="text" id="promoInput" placeholder="Enter Promo/Deposit Code">
             <button id="promoBtn">REDEEM CODE</button>
         </div>
-        <a id="whatsappBtn" href="https://wa.me/254797097831?text=I%20want%20to%20deposit%20to%20Real-pesa" target="_blank">
-            Chat with Support (WhatsApp)
-        </a>
     </div>
 </div>
 <script>
@@ -87,21 +85,18 @@
     let multiplier = 1.00, isFlying = false, betPlaced = false;
     let balance = parseInt(localStorage.getItem('realPesaBalance')) || 0;
     let history = JSON.parse(localStorage.getItem('realPesaHistory')) || [], currentBet = 0, crashPoint = 0, frame = 0;
-    
-    // EXPANDED LIST OF KENYAN NAMES
     const fakePlayers = ["Musa_K", "Jabet_254", "Otieno_Pro", "SarahW", "Kamau_G", "Liz_B", "Brian_K", "Dancan_M", "Mercy_T", "Kiptoo", "Njoroge", "Achieng", "Wambui", "Hassan", "Kiprono", "Anyango", "Maina_V", "Chepkirui", "Mwangi_P", "Atieno", "Githinji", "Nekesa", "Omondi", "Wairimu", "Kiplangat", "Nyaboke", "Wafula", "Muthoni", "Kariuki", "Moraa"];
-
     const codes = { "PESA100": 100, "PESA500": 500, "ADMIN_RESET": 0 };
 
     promoBtn.addEventListener('click', () => {
         const val = promoInput.value.toUpperCase();
         if (codes[val] !== undefined) {
-            if (val === "ADMIN_RESET") { balance = 0; alert("Balance Reset"); }
-            else { balance += codes[val]; alert("Added Ksh " + codes[val]); }
+            if (val === "ADMIN_RESET") balance = 0; else balance += codes[val];
             localStorage.setItem('realPesaBalance', balance);
             updateUI();
             promoInput.value = "";
-        } else { alert("Invalid Code!"); }
+            alert("Updated!");
+        }
     });
 
     function updateUI() {
@@ -119,14 +114,13 @@
         if (!isFlying) return;
         const name = fakePlayers[Math.floor(Math.random() * fakePlayers.length)];
         const bet = Math.floor(Math.random() * 800) + 20;
-        // Winners cash out at various points to look real
         const cashOutAt = (Math.random() * (multiplier - 1.05) + 1.05).toFixed(2);
         const win = Math.floor(bet * cashOutAt);
         const row = document.createElement('div');
         row.className = 'winner-row';
         row.innerHTML = `<span>${name}</span> <span>${cashOutAt}x</span> <span class="win-amt">Ksh ${win}</span>`;
         winnersList.prepend(row);
-        if (winnersList.children.length > 15) winnersList.removeChild(winnersList.lastChild);
+        if (winnersList.children.length > 20) winnersList.removeChild(winnersList.lastChild);
     }
 
     function drawGraph() {
@@ -146,14 +140,13 @@
     function gameLoop() {
         if (!isFlying) return;
         frame++;
-        multiplier += 0.002 + (frame / 15000);
+        multiplier += 0.003 + (frame / 12000);
         multDisplay.innerText = multiplier.toFixed(2) + "x";
         if (betPlaced) {
-            let currentProfit = Math.floor(currentBet * multiplier);
-            profitDisplay.innerText = `Profit: Ksh ${currentProfit}`;
+            profitDisplay.innerText = `Profit: Ksh ${Math.floor(currentBet * multiplier)}`;
             profitDisplay.style.display = "block";
         }
-        if (frame % 80 === 0) addWinner();
+        if (frame % 70 === 0) addWinner();
         drawGraph();
         if (multiplier >= crashPoint) {
             isFlying = false;
@@ -163,63 +156,14 @@
             history.push(multiplier.toFixed(2));
             localStorage.setItem('realPesaHistory', JSON.stringify(history));
             updateUI();
-            setTimeout(startWaitingPeriod, 2500);
-        } else {
-            requestAnimationFrame(gameLoop);
-        }
+            setTimeout(startWaitingPeriod, 3000);
+        } else { requestAnimationFrame(gameLoop); }
     }
 
     function startWaitingPeriod() {
         isFlying = false; betPlaced = false; betBtn.disabled = false; betBtn.innerText = "PLACE BET";
-        cashBtn.disabled = true; profitDisplay.style.display = "none";
+        cashBtn.disabled = true; winnersList.innerHTML = '';
         let countdown = 5;
         let timer = setInterval(() => {
             statusText.innerText = `Next Round in ${countdown}s`;
-            countdown--;
-            if (countdown < 0) { clearInterval(timer); startFlight(); }
-        }, 1000);
-    }
-
-    function startFlight() {
-        isFlying = true; frame = 0; multiplier = 1.00; winnersList.innerHTML = '';
-        
-        // ALL ROUNDS NOW REACH AT LEAST 2.00x
-        crashPoint = (Math.random() * 6 + 2.05).toFixed(2);
-        
-        statusText.innerText = betPlaced ? "In Flight!" : "Watching Flight...";
-        if (betPlaced) cashBtn.disabled = false;
-        multDisplay.style.color = "white";
-        gameLoop();
-    }
-
-    betBtn.addEventListener('click', () => {
-        let amt = parseInt(betInput.value);
-        if (amt > balance || amt <= 0) return alert("Low Balance!");
-        balance -= amt; currentBet = amt; betPlaced = true;
-        betBtn.disabled = true; betBtn.innerText = "BET PLACED";
-        localStorage.setItem('realPesaBalance', balance);
-        updateUI();
-    });
-
-    cashBtn.addEventListener('click', () => {
-        if (isFlying && betPlaced) {
-            let win = Math.floor(currentBet * multiplier);
-            balance += win; betPlaced = false; cashBtn.disabled = true;
-            statusText.innerText = `WON: Ksh ${win}!`;
-            const row = document.createElement('div');
-            row.className = 'winner-row';
-            row.style.background = "rgba(0, 255, 136, 0.1)";
-            row.innerHTML = `<span>YOU</span> <span>${multiplier.toFixed(2)}x</span> <span class="win-amt">Ksh ${win}</span>`;
-            winnersList.prepend(row);
-            localStorage.setItem('realPesaBalance', balance);
-            updateUI();
-        }
-    });
-
-    canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-    updateUI();
-    startWaitingPeriod();
-</script>
-</body>
-        </html>
-                                                 
+                
