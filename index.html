@@ -5,129 +5,104 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-pesa Aviator</title>
     <style>
-        body { 
-            background: #1a1a1a; 
-            color: white; 
-            font-family: 'Arial', sans-serif; 
-            text-align: center; 
-            margin: 0; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        #game-container { 
-            background: #222; 
-            padding: 30px; 
-            border-radius: 20px; 
-            width: 90%;
-            max-width: 350px; 
-            border: 3px solid #ff0055;
-            box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
-        }
-        h2 { color: #aaa; letter-spacing: 2px; margin-bottom: 10px; }
-        #multiplier { 
-            font-size: 4.5rem; 
-            color: #ff0055; 
-            margin: 30px 0;
-            font-weight: bold;
-        }
+        body { background: #1a1a1a; color: white; font-family: 'Arial', sans-serif; text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #game-container { background: #222; padding: 25px; border-radius: 20px; width: 90%; max-width: 360px; border: 3px solid #ff0055; box-shadow: 0 0 20px rgba(255, 0, 85, 0.3); }
+        .wallet-section { background: #333; padding: 10px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; font-weight: bold; color: #00ff88; }
+        #multiplier { font-size: 4rem; color: #ff0055; margin: 20px 0; font-weight: bold; }
         .controls { display: flex; flex-direction: column; gap: 10px; }
-        button { 
-            padding: 18px; 
-            font-size: 1.2rem; 
-            cursor: pointer; 
-            border-radius: 12px; 
-            border: none; 
-            font-weight: bold; 
-            transition: 0.2s;
-        }
+        input { padding: 12px; border-radius: 8px; border: none; background: #444; color: white; text-align: center; font-size: 1.1rem; }
+        button { padding: 15px; font-size: 1.2rem; cursor: pointer; border-radius: 12px; border: none; font-weight: bold; }
         #betBtn { background: #28a745; color: white; }
-        #betBtn:active { transform: scale(0.95); }
         #cashOutBtn { background: #ffc107; color: black; }
-        #cashOutBtn:active { transform: scale(0.95); }
-        button:disabled { background: #444; color: #777; cursor: not-allowed; transform: none; }
-        #history { margin-top: 20px; color: #777; font-size: 0.9rem; }
+        button:disabled { background: #444; color: #777; cursor: not-allowed; }
+        #status { margin-top: 15px; color: #aaa; font-size: 0.9rem; min-height: 20px; }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <h2>REAL-PESA</h2>
+        <div class="wallet-section">
+            <span>BALANCE:</span>
+            <span>Ksh <span id="balance">1000</span></span>
+        </div>
+        
+        <h2 style="color:#888; margin:0;">REAL-PESA</h2>
         <div id="multiplier">1.00x</div>
         
         <div class="controls">
-            <button id="betBtn">START BET</button>
+            <input type="number" id="betAmount" value="50" min="10">
+            <button id="betBtn">PLACE BET</button>
             <button id="cashOutBtn" disabled>CASH OUT</button>
         </div>
 
-        <div id="history">Ready to fly...</div>
+        <div id="status">Ready to play</div>
     </div>
 
     <script>
         let multiplier = 1.00;
         let isPlaying = false;
+        let balance = 1000;
+        let currentBet = 0;
         let crashPoint = 0;
         let interval;
 
-        const multiplierText = document.getElementById('multiplier');
+        const multDisplay = document.getElementById('multiplier');
+        const balDisplay = document.getElementById('balance');
+        const betInput = document.getElementById('betAmount');
         const betBtn = document.getElementById('betBtn');
-        const cashOutBtn = document.getElementById('cashOutBtn');
-        const historyText = document.getElementById('history');
+        const cashBtn = document.getElementById('cashOutBtn');
+        const statusText = document.getElementById('status');
 
         function startRound() {
+            currentBet = parseInt(betInput.value);
+            if (currentBet > balance) {
+                statusText.innerText = "Insufficient Balance!";
+                return;
+            }
+
+            balance -= currentBet;
+            balDisplay.innerText = balance;
+            
             multiplier = 1.00;
             isPlaying = true;
-            
-            // Logic: Random crash point. 
-            // It often crashes early, but can sometimes go high!
-            let rand = Math.random();
-            if (rand < 0.1) {
-                crashPoint = 1.00; // Instant crash 10% of the time
-            } else {
-                crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
-            }
+            crashPoint = (Math.random() * 5 + 1.05).toFixed(2);
             
             betBtn.disabled = true;
-            cashOutBtn.disabled = false;
-            multiplierText.style.color = "#ff0055";
-            historyText.innerText = "Plane is in the air...";
+            cashBtn.disabled = false;
+            multDisplay.style.color = "#ff0055";
+            statusText.innerText = "Flying...";
             
             interval = setInterval(() => {
                 multiplier += 0.01;
-                multiplierText.innerText = multiplier.toFixed(2) + "x";
+                multDisplay.innerText = multiplier.toFixed(2) + "x";
                 
                 if (multiplier >= crashPoint) {
-                    endRound("CRASHED");
+                    endRound(false);
                 }
-            }, 70); 
+            }, 60); 
         }
 
-        function endRound(status) {
+        function endRound(won) {
             clearInterval(interval);
             isPlaying = false;
-            
-            if (status === "CRASHED") {
-                multiplierText.style.color = "#ff4444";
-                multiplierText.innerText = "LOST!";
-                historyText.innerText = "Crashed at " + multiplier.toFixed(2) + "x";
-            } else {
-                multiplierText.style.color = "#28a745";
-                multiplierText.innerText = multiplier.toFixed(2) + "x";
-                historyText.innerText = "You cashed out!";
-            }
-            
             betBtn.disabled = false;
-            cashOutBtn.disabled = true;
+            cashBtn.disabled = true;
+
+            if (won) {
+                let winAmount = Math.floor(currentBet * multiplier);
+                balance += winAmount;
+                balDisplay.innerText = balance;
+                multDisplay.style.color = "#00ff88";
+                statusText.innerText = "You Won Ksh " + winAmount + "!";
+            } else {
+                multDisplay.style.color = "#ff4444";
+                multDisplay.innerText = "CRASHED!";
+                statusText.innerText = "Lost Ksh " + currentBet;
+            }
         }
 
         betBtn.addEventListener('click', startRound);
-
-        cashOutBtn.addEventListener('click', () => {
-            if (isPlaying) {
-                endRound("WIN");
-            }
-        });
+        cashBtn.addEventListener('click', () => { if (isPlaying) endRound(true); });
     </script>
 </body>
 </html>
