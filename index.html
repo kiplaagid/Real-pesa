@@ -3,30 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-pesa Aviator</title>
+    <title>Real-pesa Aviator Pro</title>
     <style>
-        body { background: #0b0b0b; color: white; font-family: 'Arial', sans-serif; text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        #game-container { background: #1a1a1a; padding: 20px; border-radius: 15px; width: 95%; max-width: 380px; border: 2px solid #333; }
-        .header { display: flex; justify-content: space-between; padding: 10px; background: #222; border-radius: 10px; margin-bottom: 10px; color: #00ff88; font-weight: bold; }
-        #canvas-wrapper { position: relative; background: #000; border-radius: 10px; height: 200px; margin-bottom: 15px; overflow: hidden; border: 1px solid #333; }
+        body { background: #0b0b0b; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #game-container { background: #1a1a1a; padding: 20px; border-radius: 15px; width: 95%; max-width: 380px; border: 2px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header { display: flex; justify-content: space-between; padding: 12px; background: #222; border-radius: 10px; margin-bottom: 10px; color: #00ff88; font-weight: bold; border: 1px solid #333; }
+        #canvas-wrapper { position: relative; background: radial-gradient(circle, #111 0%, #000 100%); border-radius: 10px; height: 180px; margin-bottom: 10px; overflow: hidden; border: 1px solid #444; }
         canvas { width: 100%; height: 100%; }
-        #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3.5rem; font-weight: bold; color: white; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); z-index: 10; }
-        .controls { background: #222; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px; }
-        input { padding: 12px; border-radius: 5px; border: none; background: #333; color: white; text-align: center; font-size: 1.2rem; }
-        button { padding: 15px; font-size: 1.1rem; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; text-transform: uppercase; }
+        #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3.5rem; font-weight: 900; color: white; z-index: 10; pointer-events: none; }
+        .history-bar { display: flex; gap: 5px; justify-content: center; margin-bottom: 10px; overflow: hidden; height: 25px; }
+        .hist-item { background: #333; padding: 2px 8px; border-radius: 5px; font-size: 0.8rem; color: #ff0055; border: 1px solid #444; }
+        .controls { background: #222; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: white; text-align: center; font-size: 1.2rem; }
+        button { padding: 14px; font-size: 1.1rem; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
         #betBtn { background: #28a745; color: white; }
         #cashBtn { background: #ffc107; color: black; }
-        button:disabled { background: #444; color: #777; cursor: not-allowed; }
-        #status { margin-top: 10px; font-size: 0.9rem; color: #888; height: 20px; }
+        #resetBtn { background: transparent; color: #555; font-size: 0.7rem; margin-top: 10px; border: 1px solid #333; padding: 5px; width: 100px; align-self: center; }
+        button:disabled { background: #333 !important; color: #666 !important; cursor: not-allowed; opacity: 0.5; }
+        #status { margin-top: 8px; font-size: 0.9rem; color: #aaa; min-height: 1.2rem; font-style: italic; }
     </style>
 </head>
 <body>
 
-<div id="game-container">
+<div id="game-container" style="display: flex; flex-direction: column;">
     <div class="header">
         <span>REAL-PESA</span>
         <span>Ksh <span id="balance">1000</span></span>
     </div>
+
+    <div class="history-bar" id="historyBar"></div>
 
     <div id="canvas-wrapper">
         <div id="multiplier">1.00x</div>
@@ -34,11 +39,12 @@
     </div>
 
     <div class="controls">
-        <input type="number" id="betAmount" value="100" min="10">
-        <button id="betBtn">BET</button>
+        <input type="number" id="betAmount" value="100" step="10">
+        <button id="betBtn">PLACE BET</button>
         <button id="cashBtn" disabled>CASH OUT</button>
+        <button id="resetBtn" onclick="resetGame()">Reset Balance</button>
     </div>
-    <div id="status">Place your bet to start</div>
+    <div id="status">Ready to fly</div>
 </div>
 
 <script>
@@ -50,14 +56,26 @@
     const betBtn = document.getElementById('betBtn');
     const cashBtn = document.getElementById('cashBtn');
     const statusText = document.getElementById('status');
+    const historyBar = document.getElementById('historyBar');
 
-    // Win Sound Effect
     const winSound = new Audio('https://www.soundjay.com/buttons/sounds/button-37a.mp3');
 
     let multiplier = 1.00;
     let isPlaying = false;
     let balance = parseInt(localStorage.getItem('realPesaBalance')) || 1000;
-    balDisplay.innerText = balance;
+    let history = JSON.parse(localStorage.getItem('realPesaHistory')) || [];
+    
+    function updateUI() {
+        balDisplay.innerText = balance;
+        historyBar.innerHTML = '';
+        history.slice(-5).reverse().forEach(val => {
+            const span = document.createElement('div');
+            span.className = 'hist-item';
+            span.innerText = val + 'x';
+            historyBar.appendChild(span);
+        });
+    }
+    updateUI();
 
     let currentBet = 0;
     let crashPoint = 0;
@@ -76,6 +94,7 @@
         ctx.beginPath();
         ctx.strokeStyle = "#ff0055";
         ctx.lineWidth = 4;
+        ctx.setLineDash([]);
         ctx.moveTo(0, canvas.height);
 
         for (let i = 0; i < frame; i++) {
@@ -87,74 +106,18 @@
 
         let lastX = (frame / 200) * canvas.width;
         let lastY = canvas.height - Math.pow(frame / 50, 2);
-        ctx.fillStyle = "red";
-        ctx.font = "24px Arial";
+        ctx.fillStyle = "white";
+        ctx.font = "28px Arial";
         ctx.fillText("✈️", lastX - 10, lastY + 10);
     }
 
     function update() {
         if (!isPlaying) return;
         frame++;
-        multiplier += 0.005 + (frame / 5000);
+        multiplier += 0.005 + (frame / 5500);
         multDisplay.innerText = multiplier.toFixed(2) + "x";
         drawGraph();
 
         if (multiplier >= crashPoint) {
             endRound(false);
-        } else {
-            animationId = requestAnimationFrame(update);
-        }
-    }
-
-    function startRound() {
-        currentBet = parseInt(betInput.value);
-        if (currentBet > balance || currentBet <= 0) {
-            statusText.innerText = "Check your balance!";
-            return;
-        }
-
-        balance -= currentBet;
-        saveBalance();
-        
-        multiplier = 1.00;
-        frame = 0;
-        isPlaying = true;
-        crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
-        
-        betBtn.disabled = true;
-        cashBtn.disabled = false;
-        statusText.innerText = "Flying...";
-        multDisplay.style.color = "white";
-        update();
-    }
-
-    function endRound(won) {
-        isPlaying = false;
-        cancelAnimationFrame(animationId);
-        betBtn.disabled = false;
-        cashBtn.disabled = true;
-
-        if (won) {
-            winSound.play(); // Play sound on win
-            let win = Math.floor(currentBet * multiplier);
-            balance += win;
-            saveBalance();
-            multDisplay.style.color = "#00ff88";
-            statusText.innerText = "WIN! Received Ksh " + win;
-        } else {
-            multDisplay.style.color = "#ff4444";
-            multDisplay.innerText = "FLEW AWAY!";
-            statusText.innerText = "Crashed at " + multiplier.toFixed(2) + "x";
-        }
-    }
-
-    function saveBalance() {
-        balDisplay.innerText = balance;
-        localStorage.setItem('realPesaBalance', balance);
-    }
-
-    betBtn.addEventListener('click', startRound);
-    cashBtn.addEventListener('click', () => { if (isPlaying) endRound(true); });
-</script>
-</body>
-</html>
+    
