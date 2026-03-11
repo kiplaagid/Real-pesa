@@ -5,23 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-pesa Aviator Pro</title>
     <style>
-        body { background: #0b0b0b; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        #game-container { background: #1a1a1a; padding: 20px; border-radius: 15px; width: 95%; max-width: 380px; border: 2px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        body { background: #0b0b0b; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        #game-container { background: #1a1a1a; padding: 20px; border-radius: 15px; width: 95%; max-width: 380px; border: 2px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin: 20px 0; }
         .header { display: flex; justify-content: space-between; padding: 12px; background: #222; border-radius: 10px; margin-bottom: 10px; color: #00ff88; font-weight: bold; border: 1px solid #333; }
         #canvas-wrapper { position: relative; background: radial-gradient(circle, #111 0%, #000 100%); border-radius: 10px; height: 180px; margin-bottom: 10px; overflow: hidden; border: 1px solid #444; }
         canvas { width: 100%; height: 100%; }
         #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3.5rem; font-weight: 900; color: white; z-index: 10; pointer-events: none; }
         .history-bar { display: flex; gap: 5px; justify-content: center; margin-bottom: 10px; overflow: hidden; height: 25px; }
         .hist-item { background: #333; padding: 2px 8px; border-radius: 5px; font-size: 0.8rem; color: #ff0055; border: 1px solid #444; }
-        .controls { background: #222; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; }
-        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: white; text-align: center; font-size: 1.2rem; }
+        .controls, .deposit-section { background: #222; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border: 1px solid #333; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: white; text-align: center; font-size: 1.1rem; }
         button { padding: 14px; font-size: 1.1rem; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
         #betBtn { background: #28a745; color: white; }
         #cashBtn { background: #ffc107; color: black; }
-        #resetBtn { background: transparent; color: #555; font-size: 0.7rem; margin-top: 10px; border: 1px solid #333; padding: 5px; width: 100px; align-self: center; }
-        button:disabled { background: #333 !important; color: #666 !important; cursor: not-allowed; opacity: 0.5; }
+        .deposit-btn { background: #007bff; color: white; font-size: 0.9rem; }
         #status { margin-top: 8px; font-size: 0.9rem; color: #aaa; min-height: 1.2rem; font-style: italic; }
-        #fairness-info { font-size: 0.6rem; color: #444; margin-top: 5px; word-break: break-all; }
+        .pochi-box { background: #111; padding: 10px; border-radius: 8px; border: 1px dashed #00ff88; font-size: 0.85rem; color: #00ff88; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -43,9 +42,18 @@
         <input type="number" id="betAmount" value="100" step="10">
         <button id="betBtn">PLACE BET</button>
         <button id="cashBtn" disabled>CASH OUT</button>
-        <button id="resetBtn" onclick="resetGame()">Reset Balance</button>
         <div id="status">Ready to fly</div>
-        <div id="fairness-info">Hash: <span id="roundHash">None</span></div>
+    </div>
+
+    <div class="deposit-section">
+        <strong style="color: #007bff; font-size: 0.9rem;">DEPOSIT FUNDS</strong>
+        <div class="pochi-box">
+            Lipa na M-PESA<br>
+            Pochi La Biashara: <strong>0797097831</strong>
+        </div>
+        <input type="text" id="mPesaCode" placeholder="Enter M-PESA Code (e.g. RCK...)" style="font-size: 0.9rem;">
+        <button class="deposit-btn" onclick="submitDeposit()">Submit Transaction</button>
+        <small style="color: #666; font-size: 0.7rem;">Balance updates after manual verification.</small>
     </div>
 </div>
 
@@ -59,7 +67,6 @@
     const cashBtn = document.getElementById('cashBtn');
     const statusText = document.getElementById('status');
     const historyBar = document.getElementById('historyBar');
-    const hashDisplay = document.getElementById('roundHash');
 
     const winSound = new Audio('https://www.soundjay.com/buttons/sounds/button-37a.mp3');
 
@@ -113,13 +120,6 @@
         ctx.fillText("✈️", lastX - 10, lastY + 10);
     }
 
-    async function generateHash(value) {
-        const msgUint8 = new TextEncoder().encode(value.toString());
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
     function update() {
         if (!isPlaying) return;
         frame++;
@@ -134,18 +134,12 @@
         }
     }
 
-    async function startRound() {
+    function startRound() {
         currentBet = parseInt(betInput.value);
         if (currentBet > balance || currentBet <= 0) {
             statusText.innerText = "Check your balance!";
             return;
         }
-
-        let r = Math.random();
-        crashPoint = r < 0.15 ? 1.00 : (Math.random() * 4 + 1.1).toFixed(2);
-        
-        const hash = await generateHash(crashPoint + Date.now());
-        hashDisplay.innerText = hash.substring(0, 20) + "...";
 
         balance -= currentBet;
         saveData();
@@ -153,6 +147,8 @@
         multiplier = 1.00;
         frame = 0;
         isPlaying = true;
+        crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
+        
         betBtn.disabled = true;
         cashBtn.disabled = false;
         statusText.innerText = "In Flight...";
@@ -188,12 +184,15 @@
         localStorage.setItem('realPesaHistory', JSON.stringify(history));
     }
 
-    function resetGame() {
-        if (confirm("Reset balance to Ksh 1000?")) {
-            balance = 1000;
-            saveData();
-            updateUI();
+    // New function for deposit submission
+    function submitDeposit() {
+        const code = document.getElementById('mPesaCode').value.trim();
+        if (code.length < 5) {
+            alert("Please enter a valid M-PESA transaction code.");
+            return;
         }
+        alert("Transaction Code " + code + " submitted! Please wait for manual verification to update your balance.");
+        document.getElementById('mPesaCode').value = '';
     }
 
     betBtn.addEventListener('click', startRound);
