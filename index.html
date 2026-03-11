@@ -3,7 +3,7 @@
 :root{--p:#1b5e20;--m:#4caf50;--d:#121212;--r:#ff4444;}body{font-family:sans-serif;margin:0;background:#000;color:#fff;text-align:center;overflow-x:hidden;}
 header{background:var(--p);padding:15px;font-weight:bold;}.hist{background:#1a1a1a;padding:8px;display:flex;justify-content:center;gap:5px;font-size:0.7rem;border-bottom:1px solid #333;}
 .h-item{background:#333;padding:3px 8px;border-radius:10px;color:var(--m);}.game{background:var(--d);margin:10px;height:150px;border-radius:10px;border:2px solid #333;display:flex;flex-direction:column;justify-content:center;}
-#mult{font-size:3.5rem;font-weight:bold; transition: 0.1s;} .ctrl{padding:15px;background:#1a1a1a;margin:10px;border-radius:15px;}
+#mult{font-size:3.5rem;font-weight:bold; transition:0.1s;}.ctrl{padding:15px;background:#1a1a1a;margin:10px;border-radius:15px;}
 input{width:90%;padding:10px;margin:10px 0;border-radius:8px;border:none;background:#222;color:#fff;}
 .btn{width:95%;padding:15px;border:none;border-radius:10px;font-weight:bold;font-size:1.1rem;cursor:pointer;}
 .bet{background:var(--m);color:#fff;}.cash{background:#fbc02d;color:#000;}.chat{margin:10px;background:#111;border-radius:10px;height:120px;display:flex;flex-direction:column;}
@@ -26,23 +26,5 @@ function loop(){
     iv=setInterval(()=>{
         m+=0.01; x.innerText=m.toFixed(2)+"x";
         if(m>=crash){clearInterval(iv); isFlying=false; addH(m.toFixed(2));
-            x.innerText="FLEW AWAY!"; x.style.color="var(--r)"; s.innerText="Waiting for Next Round...";
-            if(myBet>0){ b.innerText="PLACE BET"; b.className="btn bet"; myBet=0; }
-            setTimeout(loop, 3000);
-        }
-    },100);
-}
-function action(){
-    if(myBet===0 && isFlying && m < 1.1){
-        myBet=document.getElementById('amt').value||10; b.innerText="CASH OUT"; b.className="btn cash";
-    }else if(myBet>0 && isFlying){
-        let win = (myBet * m).toFixed(2); alert("You Won KES "+win);
-        b.innerText="PLACE BET"; b.className="btn bet"; myBet=0;
-    }
-}
-function sendChat(){
-    const i=document.getElementById('c-in'), m=document.getElementById('msgs');
-    if(i.value){ m.innerHTML+=`<div class="msg"><b>User:</b> ${i.value}</div>`; m.scrollTop=m.scrollHeight; i.value=''; }
-}
-loop();
-</script></body></html>
+            x.innerText="FLEW AWAY!"; x.style.color="
+    
