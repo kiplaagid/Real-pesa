@@ -1,31 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-pesa Aviator</title>
-    <style>
-        body { background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
-        #game-container { margin-top: 50px; }
-        #multiplier { font-size: 3rem; color: #ff0055; }
-        canvas { background: #000; border: 2px solid #333; width: 90%; max-width: 500px; height: 300px; }
-        button { padding: 15px 30px; font-size: 1.2rem; margin: 10px; cursor: pointer; border-radius: 8px; border: none; }
-        #betBtn { background: #28a745; color: white; }
-        #cashOutBtn { background: #ffc107; color: black; }
-        button:disabled { background: #555; cursor: not-allowed; }
-    </style>
-</head>
-<body>
+let multiplier = 1.00;
+let isPlaying = false;
+let crashPoint = 0;
+let interval;
 
-    <div id="game-container">
-        <h1 id="multiplier">1.00x</h1>
-        <canvas id="gameCanvas"></canvas>
-        <div>
-            <button id="betBtn">BET</button>
-            <button id="cashOutBtn" disabled>CASH OUT</button>
-        </div>
-    </div>
+const multiplierText = document.getElementById('multiplier');
+const betBtn = document.getElementById('betBtn');
+const cashOutBtn = document.getElementById('cashOutBtn');
 
-    <script src="script.js"></script>
-</body>
-</html>
+function startRound() {
+    multiplier = 1.00;
+    isPlaying = true;
+    // Random crash point between 1.1 and 10.0
+    crashPoint = (Math.random() * 9 + 1.1).toFixed(2);
+    
+    betBtn.disabled = true;
+    cashOutBtn.disabled = false;
+    
+    interval = setInterval(() => {
+        multiplier += 0.01;
+        multiplierText.innerText = multiplier.toFixed(2) + "x";
+        
+        if (multiplier >= crashPoint) {
+            endRound("CRASHED!");
+        }
+    }, 100);
+}
+
+function endRound(message) {
+    clearInterval(interval);
+    isPlaying = false;
+    multiplierText.innerText = message + " at " + multiplier.toFixed(2) + "x";
+    betBtn.disabled = false;
+    cashOutBtn.disabled = true;
+}
+
+betBtn.addEventListener('click', startRound);
+
+cashOutBtn.addEventListener('click', () => {
+    if (isPlaying) {
+        clearInterval(interval);
+        isPlaying = false;
+        multiplierText.innerText = "CASHOUT! " + multiplier.toFixed(2) + "x";
+        betBtn.disabled = false;
+        cashOutBtn.disabled = true;
+    }
+});
