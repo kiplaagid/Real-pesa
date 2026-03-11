@@ -17,10 +17,7 @@
         input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: white; text-align: center; font-size: 1.1rem; width: calc(100% - 26px); }
         button { padding: 14px; font-size: 1.1rem; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; text-transform: uppercase; transition: 0.2s; width: 100%; }
         #betBtn { background: #28a745; color: white; }
-        #betBtn.active { background: #555; content: "BET PLACED"; }
         #cashBtn { background: #ffc107; color: black; }
-        .deposit-btn { background: #007bff; color: white; }
-        .withdraw-btn { background: #dc3545; color: white; }
         #status { margin-top: 8px; font-size: 1rem; color: #ffc107; min-height: 1.2rem; font-weight: bold; }
         .pochi-box { background: #111; padding: 12px; border-radius: 8px; border: 1px dashed #00ff88; font-size: 0.9rem; color: #00ff88; line-height: 1.4; }
     </style>
@@ -44,7 +41,7 @@
         <input type="number" id="betAmount" value="100" step="10">
         <button id="betBtn">PLACE BET</button>
         <button id="cashBtn" disabled>CASH OUT</button>
-        <div id="status">Waiting for next round...</div>
+        <div id="status">Loading Game...</div>
     </div>
 
     <div class="action-section">
@@ -70,7 +67,6 @@
     let multiplier = 1.00;
     let isFlying = false;
     let betPlaced = false;
-    let cashedOut = false;
     let balance = parseInt(localStorage.getItem('realPesaBalance')) || 1000;
     let history = JSON.parse(localStorage.getItem('realPesaHistory')) || [];
     let currentBet = 0;
@@ -116,7 +112,13 @@
         drawGraph();
 
         if (multiplier >= crashPoint) {
-            crash();
+            isFlying = false;
+            multDisplay.style.color = "#ff0055";
+            statusText.innerText = `Crashed @ ${multiplier.toFixed(2)}x`;
+            history.push(multiplier.toFixed(2));
+            localStorage.setItem('realPesaHistory', JSON.stringify(history));
+            updateUI();
+            setTimeout(startWaitingPeriod, 2500);
         } else {
             requestAnimationFrame(gameLoop);
         }
@@ -125,14 +127,60 @@
     function startWaitingPeriod() {
         isFlying = false;
         betPlaced = false;
-        cashedOut = false;
         betBtn.disabled = false;
         betBtn.innerText = "PLACE BET";
         cashBtn.disabled = true;
         let countdown = 5;
         
-        const timer = setInterval(() => {
+        let timer = setInterval(() => {
             statusText.innerText = `Next Round in ${countdown}s`;
             countdown--;
             if (countdown < 0) {
                 clearInterval(timer);
+                startFlight();
+            }
+        }, 1000);
+    }
+
+    function startFlight() {
+        isFlying = true;
+        frame = 0;
+        multiplier = 1.00;
+        crashPoint = (Math.random() * 3.5 + 1.1).toFixed(2);
+        statusText.innerText = "Plane is Airborne!";
+        if (betPlaced) cashBtn.disabled = false;
+        gameLoop();
+    }
+
+    betBtn.addEventListener('click', () => {
+        let amt = parseInt(betInput.value);
+        if (amt > balance || amt <= 0) return alert("Low balance!");
+        balance -= amt;
+        currentBet = amt;
+        betPlaced = true;
+        betBtn.disabled = true;
+        betBtn.innerText = "BET PLACED";
+        localStorage.setItem('realPesaBalance', balance);
+        updateUI();
+    });
+
+    cashBtn.addEventListener('click', () => {
+        if (isFlying && betPlaced) {
+            let win = Math.floor(currentBet * multiplier);
+            balance += win;
+            betPlaced = false;
+            cashBtn.disabled = true;
+            statusText.innerText = `Won Ksh ${win}!`;
+            localStorage.setItem('realPesaBalance', balance);
+            updateUI();
+        }
+    });
+
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    updateUI();
+    startWaitingPeriod();
+</script>
+</body>
+    </html>
+    
