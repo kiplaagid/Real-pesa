@@ -5,22 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-pesa Aviator Pro</title>
     <style>
-        body { background: #0b0b0b; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        #game-container { background: #1a1a1a; padding: 20px; border-radius: 15px; width: 95%; max-width: 380px; border: 2px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin: 20px 0; }
+        body { background: #0b0b0b; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-y: auto; padding: 20px 0; }
+        #game-container { background: #1a1a1a; padding: 20px; border-radius: 15px; width: 95%; max-width: 380px; border: 2px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .header { display: flex; justify-content: space-between; padding: 12px; background: #222; border-radius: 10px; margin-bottom: 10px; color: #00ff88; font-weight: bold; border: 1px solid #333; }
         #canvas-wrapper { position: relative; background: radial-gradient(circle, #111 0%, #000 100%); border-radius: 10px; height: 180px; margin-bottom: 10px; overflow: hidden; border: 1px solid #444; }
         canvas { width: 100%; height: 100%; }
         #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3.5rem; font-weight: 900; color: white; z-index: 10; pointer-events: none; }
         .history-bar { display: flex; gap: 5px; justify-content: center; margin-bottom: 10px; overflow: hidden; height: 25px; }
         .hist-item { background: #333; padding: 2px 8px; border-radius: 5px; font-size: 0.8rem; color: #ff0055; border: 1px solid #444; }
-        .controls, .deposit-section { background: #222; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border: 1px solid #333; }
+        .controls, .deposit-section { background: #222; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
         input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: white; text-align: center; font-size: 1.1rem; }
         button { padding: 14px; font-size: 1.1rem; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; text-transform: uppercase; transition: 0.2s; }
         #betBtn { background: #28a745; color: white; }
         #cashBtn { background: #ffc107; color: black; }
         .deposit-btn { background: #007bff; color: white; font-size: 0.9rem; }
         #status { margin-top: 8px; font-size: 0.9rem; color: #aaa; min-height: 1.2rem; font-style: italic; }
-        .pochi-box { background: #111; padding: 10px; border-radius: 8px; border: 1px dashed #00ff88; font-size: 0.85rem; color: #00ff88; margin-bottom: 5px; }
+        .pochi-box { background: #111; padding: 12px; border-radius: 8px; border: 1px dashed #00ff88; font-size: 0.9rem; color: #00ff88; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -49,11 +49,12 @@
         <strong style="color: #007bff; font-size: 0.9rem;">DEPOSIT FUNDS</strong>
         <div class="pochi-box">
             Lipa na M-PESA<br>
-            Pochi La Biashara: <strong>0797097831</strong>
+            Pochi La Biashara: <br>
+            <strong style="font-size: 1.2rem;">0797097831</strong>
         </div>
-        <input type="text" id="mPesaCode" placeholder="Enter M-PESA Code (e.g. RCK...)" style="font-size: 0.9rem;">
-        <button class="deposit-btn" onclick="submitDeposit()">Submit Transaction</button>
-        <small style="color: #666; font-size: 0.7rem;">Balance updates after manual verification.</small>
+        <input type="text" id="mPesaCode" placeholder="Enter Transaction Code">
+        <button class="deposit-btn" onclick="submitDeposit()">Submit Deposit</button>
+        <small style="color: #666; font-size: 0.7rem;">Verification is manual. Please wait after submitting.</small>
     </div>
 </div>
 
@@ -68,8 +69,6 @@
     const statusText = document.getElementById('status');
     const historyBar = document.getElementById('historyBar');
 
-    const winSound = new Audio('https://www.soundjay.com/buttons/sounds/button-37a.mp3');
-
     let multiplier = 1.00;
     let isPlaying = false;
     let balance = parseInt(localStorage.getItem('realPesaBalance')) || 1000;
@@ -80,123 +79,4 @@
         historyBar.innerHTML = '';
         history.slice(-5).reverse().forEach(val => {
             const span = document.createElement('div');
-            span.className = 'hist-item';
-            span.innerText = val + 'x';
-            historyBar.appendChild(span);
-        });
-    }
-    updateUI();
-
-    let currentBet = 0;
-    let crashPoint = 0;
-    let animationId;
-    let frame = 0;
-
-    function resize() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-    }
-    window.addEventListener('resize', resize);
-    resize();
-
-    function drawGraph() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-        ctx.strokeStyle = "#ff0055";
-        ctx.lineWidth = 4;
-        ctx.moveTo(0, canvas.height);
-
-        for (let i = 0; i < frame; i++) {
-            let x = (i / 200) * canvas.width;
-            let y = canvas.height - Math.pow(i / 50, 2);
-            ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-
-        let lastX = (frame / 200) * canvas.width;
-        let lastY = canvas.height - Math.pow(frame / 50, 2);
-        ctx.fillStyle = "white";
-        ctx.font = "28px Arial";
-        ctx.fillText("✈️", lastX - 10, lastY + 10);
-    }
-
-    function update() {
-        if (!isPlaying) return;
-        frame++;
-        multiplier += 0.005 + (frame / 5500);
-        multDisplay.innerText = multiplier.toFixed(2) + "x";
-        drawGraph();
-
-        if (multiplier >= crashPoint) {
-            endRound(false);
-        } else {
-            animationId = requestAnimationFrame(update);
-        }
-    }
-
-    function startRound() {
-        currentBet = parseInt(betInput.value);
-        if (currentBet > balance || currentBet <= 0) {
-            statusText.innerText = "Check your balance!";
-            return;
-        }
-
-        balance -= currentBet;
-        saveData();
-        
-        multiplier = 1.00;
-        frame = 0;
-        isPlaying = true;
-        crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
-        
-        betBtn.disabled = true;
-        cashBtn.disabled = false;
-        statusText.innerText = "In Flight...";
-        multDisplay.style.color = "white";
-        update();
-    }
-
-    function endRound(won) {
-        isPlaying = false;
-        cancelAnimationFrame(animationId);
-        betBtn.disabled = false;
-        cashBtn.disabled = true;
-
-        if (won) {
-            winSound.play();
-            let win = Math.floor(currentBet * multiplier);
-            balance += win;
-            statusText.innerText = "WIN! Received Ksh " + win;
-            multDisplay.style.color = "#00ff88";
-        } else {
-            history.push(multiplier.toFixed(2));
-            if (history.length > 10) history.shift();
-            statusText.innerText = "Crashed at " + multiplier.toFixed(2) + "x";
-            multDisplay.style.color = "#ff4444";
-            multDisplay.innerText = "FLEW AWAY!";
-        }
-        saveData();
-        updateUI();
-    }
-
-    function saveData() {
-        localStorage.setItem('realPesaBalance', balance);
-        localStorage.setItem('realPesaHistory', JSON.stringify(history));
-    }
-
-    // New function for deposit submission
-    function submitDeposit() {
-        const code = document.getElementById('mPesaCode').value.trim();
-        if (code.length < 5) {
-            alert("Please enter a valid M-PESA transaction code.");
-            return;
-        }
-        alert("Transaction Code " + code + " submitted! Please wait for manual verification to update your balance.");
-        document.getElementById('mPesaCode').value = '';
-    }
-
-    betBtn.addEventListener('click', startRound);
-    cashBtn.addEventListener('click', () => { if (isPlaying) endRound(true); });
-</script>
-</body>
-</html>
+    
