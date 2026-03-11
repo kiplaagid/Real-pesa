@@ -1,47 +1,133 @@
-let multiplier = 1.00;
-let isPlaying = false;
-let crashPoint = 0;
-let interval;
-
-const multiplierText = document.getElementById('multiplier');
-const betBtn = document.getElementById('betBtn');
-const cashOutBtn = document.getElementById('cashOutBtn');
-
-function startRound() {
-    multiplier = 1.00;
-    isPlaying = true;
-    // Random crash point between 1.1 and 10.0
-    crashPoint = (Math.random() * 9 + 1.1).toFixed(2);
-    
-    betBtn.disabled = true;
-    cashOutBtn.disabled = false;
-    
-    interval = setInterval(() => {
-        multiplier += 0.01;
-        multiplierText.innerText = multiplier.toFixed(2) + "x";
-        
-        if (multiplier >= crashPoint) {
-            endRound("CRASHED!");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-pesa Aviator</title>
+    <style>
+        body { 
+            background: #1a1a1a; 
+            color: white; 
+            font-family: 'Arial', sans-serif; 
+            text-align: center; 
+            margin: 0; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-    }, 100);
-}
+        #game-container { 
+            background: #222; 
+            padding: 30px; 
+            border-radius: 20px; 
+            width: 90%;
+            max-width: 350px; 
+            border: 3px solid #ff0055;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.3);
+        }
+        h2 { color: #aaa; letter-spacing: 2px; margin-bottom: 10px; }
+        #multiplier { 
+            font-size: 4.5rem; 
+            color: #ff0055; 
+            margin: 30px 0;
+            font-weight: bold;
+        }
+        .controls { display: flex; flex-direction: column; gap: 10px; }
+        button { 
+            padding: 18px; 
+            font-size: 1.2rem; 
+            cursor: pointer; 
+            border-radius: 12px; 
+            border: none; 
+            font-weight: bold; 
+            transition: 0.2s;
+        }
+        #betBtn { background: #28a745; color: white; }
+        #betBtn:active { transform: scale(0.95); }
+        #cashOutBtn { background: #ffc107; color: black; }
+        #cashOutBtn:active { transform: scale(0.95); }
+        button:disabled { background: #444; color: #777; cursor: not-allowed; transform: none; }
+        #history { margin-top: 20px; color: #777; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
 
-function endRound(message) {
-    clearInterval(interval);
-    isPlaying = false;
-    multiplierText.innerText = message + " at " + multiplier.toFixed(2) + "x";
-    betBtn.disabled = false;
-    cashOutBtn.disabled = true;
-}
+    <div id="game-container">
+        <h2>REAL-PESA</h2>
+        <div id="multiplier">1.00x</div>
+        
+        <div class="controls">
+            <button id="betBtn">START BET</button>
+            <button id="cashOutBtn" disabled>CASH OUT</button>
+        </div>
 
-betBtn.addEventListener('click', startRound);
+        <div id="history">Ready to fly...</div>
+    </div>
 
-cashOutBtn.addEventListener('click', () => {
-    if (isPlaying) {
-        clearInterval(interval);
-        isPlaying = false;
-        multiplierText.innerText = "CASHOUT! " + multiplier.toFixed(2) + "x";
-        betBtn.disabled = false;
-        cashOutBtn.disabled = true;
-    }
-});
+    <script>
+        let multiplier = 1.00;
+        let isPlaying = false;
+        let crashPoint = 0;
+        let interval;
+
+        const multiplierText = document.getElementById('multiplier');
+        const betBtn = document.getElementById('betBtn');
+        const cashOutBtn = document.getElementById('cashOutBtn');
+        const historyText = document.getElementById('history');
+
+        function startRound() {
+            multiplier = 1.00;
+            isPlaying = true;
+            
+            // Logic: Random crash point. 
+            // It often crashes early, but can sometimes go high!
+            let rand = Math.random();
+            if (rand < 0.1) {
+                crashPoint = 1.00; // Instant crash 10% of the time
+            } else {
+                crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
+            }
+            
+            betBtn.disabled = true;
+            cashOutBtn.disabled = false;
+            multiplierText.style.color = "#ff0055";
+            historyText.innerText = "Plane is in the air...";
+            
+            interval = setInterval(() => {
+                multiplier += 0.01;
+                multiplierText.innerText = multiplier.toFixed(2) + "x";
+                
+                if (multiplier >= crashPoint) {
+                    endRound("CRASHED");
+                }
+            }, 70); 
+        }
+
+        function endRound(status) {
+            clearInterval(interval);
+            isPlaying = false;
+            
+            if (status === "CRASHED") {
+                multiplierText.style.color = "#ff4444";
+                multiplierText.innerText = "LOST!";
+                historyText.innerText = "Crashed at " + multiplier.toFixed(2) + "x";
+            } else {
+                multiplierText.style.color = "#28a745";
+                multiplierText.innerText = multiplier.toFixed(2) + "x";
+                historyText.innerText = "You cashed out!";
+            }
+            
+            betBtn.disabled = false;
+            cashOutBtn.disabled = true;
+        }
+
+        betBtn.addEventListener('click', startRound);
+
+        cashOutBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                endRound("WIN");
+            }
+        });
+    </script>
+</body>
+</html>
