@@ -13,4 +13,49 @@
         #multiplier { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3.5rem; font-weight: 900; color: white; z-index: 10; pointer-events: none; }
         .history-bar { display: flex; gap: 5px; justify-content: center; margin-bottom: 10px; overflow: hidden; height: 25px; }
         .hist-item { background: #333; padding: 2px 8px; border-radius: 5px; font-size: 0.8rem; color: #ff0055; border: 1px solid #444; }
-        .controls, .action-section, .winners-section { background: #222; padding: 15px; border-radius: 1
+        .controls, .action-section, .winners-section { background: #222; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: white; text-align: center; font-size: 1.1rem; width: calc(100% - 26px); }
+        button { padding: 14px; font-size: 1.1rem; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; text-transform: uppercase; transition: 0.2s; width: 100%; }
+        #betBtn { background: #28a745; color: white; }
+        #cashBtn { background: #ffc107; color: black; }
+        .whatsapp-btn { text-decoration: none; display: block; padding: 10px; border-radius: 8px; font-size: 0.9rem; font-weight: bold; color: white; }
+        #depositBtn { background: #25D366; }
+        #withdrawBtn { background: #007bff; }
+        #status { margin-top: 8px; font-size: 1rem; color: #ffc107; min-height: 1.2rem; font-weight: bold; }
+        #profit-tracker { color: #00ff88; font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; display: none; }
+        .pochi-box { background: #111; padding: 12px; border-radius: 8px; border: 1px dashed #00ff88; font-size: 0.9rem; color: #00ff88; line-height: 1.4; }
+        #winnersList { max-height: 180px; overflow-y: auto; text-align: left; }
+        .winner-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 6px 0; border-bottom: 1px solid #2a2a2a; }
+        .win-amt { color: #00ff88; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div id="game-container">
+    <div class="header">
+        <span>REAL-PESA</span>
+        <span>Ksh <span id="balance">0</span></span>
+    </div>
+    <div class="history-bar" id="historyBar"></div>
+    <div id="canvas-wrapper">
+        <div id="multiplier">1.00x</div>
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    <div class="controls">
+        <div id="profit-tracker">Profit: Ksh 0</div>
+        <input type="number" id="betAmount" value="10" step="10">
+        <button id="betBtn">PLACE BET</button>
+        <button id="cashBtn" disabled>CASH OUT</button>
+        <div id="status">Ready to Play</div>
+    </div>
+    <div class="winners-section">
+        <div style="font-size: 0.8rem; color: #aaa; margin-bottom: 5px;">LIVE BETS / TOP WINNERS</div>
+        <div id="winnersList"></div>
+    </div>
+    <div class="action-section">
+        <div class="pochi-box">
+            Lipa na M-PESA Pochi: <br>
+            <strong style="font-size: 1.2rem;">0797097831</strong>
+        </div>
+        <a id="depositBtn" class="whatsapp-btn" href="https://wa.me/254797097831?text=Deposit" target="_blank">DEPOSIT</a>
+        <a id="withdrawBtn
+    
