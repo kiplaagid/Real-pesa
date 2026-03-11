@@ -1,19 +1,12 @@
-function loop(){ 
-    isFlying=true; m=1.0; x.style.color="#fff"; s.innerText="FLYING...";
-    let crash=(Math.random()*5+1.2).toFixed(2);
-    db.collection("game_settings").doc("current_round").set({ next_crash: crash });
-    iv=setInterval(()=>{
-        m+=0.01; x.innerText=m.toFixed(2)+"x";
-        if(m>=crash){
-            clearInterval(iv); isFlying=false; x.innerText="CRASHED!"; x.style.color="var(--r)"; s.innerText="READY";
-            let item = document.createElement("span");
-            item.className = "h-item " + (crash < 2 ? "crash" : "");
-            item.innerText = crash + "x";
-            rh.insertBefore(item, rh.firstChild.nextSibling);
-            
-            // This is where the delay happens (7000 = 7 seconds pause)
-            b.style.display="block"; cb.style.display="none"; setTimeout(loop, 7000);
-        }
-    },100);
-}
-                
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Real-pesa | Live</title>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<style>
+:root{--p:#2e7d32;--m:#66bb6a;--d:#0a0a0a;--r:#ff5252;--g:#1a1a1a;}
+body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--d);color:#fff;text-align:center;overflow-x:hidden;}
+header{background:var(--p);padding:15px;font-weight:bold;cursor:pointer;border-bottom:2px solid #1b5e20;position:relative;}
+.logo{font-size:1.6rem;letter-spacing:1px;text-transform:uppercase;font-weight:900;}
+#bal{position:absolute;right:10px;top:20px;font-size:0.75rem;color:#fff;background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:5px;}
+.how-to{background:#1a1a1
+    
