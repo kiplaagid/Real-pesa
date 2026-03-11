@@ -57,5 +57,139 @@
             <strong style="font-size: 1.2rem;">0797097831</strong>
         </div>
         <a id="depositBtn" class="whatsapp-btn" href="https://wa.me/254797097831?text=Deposit" target="_blank">DEPOSIT</a>
-        <a id="withdrawBtn
+        <a id="withdrawBtn" class="whatsapp-btn" href="https://wa.me/254797097831?text=Withdraw" target="_blank">WITHDRAW</a>
+    </div>
+</div>
+
+<script>
+    const sfxFly = new Audio('https://codeskulptor-demos.commondatastorage.googleapis.com/pang/paws.mp3');
+    const sfxCrash = new Audio('https://codeskulptor-demos.commondatastorage.googleapis.com/GalaxyInvaders/explosion01.wav');
+    const sfxWin = new Audio('https://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3');
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const multDisplay = document.getElementById('multiplier');
+    const balDisplay = document.getElementById('balance');
+    const betInput = document.getElementById('betAmount');
+    const betBtn = document.getElementById('betBtn');
+    const cashBtn = document.getElementById('cashBtn');
+    const statusText = document.getElementById('status');
+    const historyBar = document.getElementById('historyBar');
+    const profitDisplay = document.getElementById('profit-tracker');
+    const winnersList = document.getElementById('winnersList');
     
+    let multiplier = 1.00, isFlying = false, betPlaced = false;
+    let balance = parseInt(localStorage.getItem('realPesaBalance')) || 0;
+    let history = JSON.parse(localStorage.getItem('realPesaHistory')) || [], currentBet = 0, crashPoint = 0, frame = 0;
+    const fakePlayers = ["Musa_K", "Jabet_254", "Otieno_Pro", "SarahW", "Kamau_G", "Liz_B", "Brian_K", "Dancan_M", "Mercy_T", "Kiptoo", "Njoroge", "Achieng", "Wambui", "Hassan", "Kiprono", "Anyango", "Maina_V", "Chepkirui", "Mwangi_P", "Atieno", "Githinji", "Nekesa", "Omondi", "Wairimu", "Kiplangat", "Nyaboke", "Wafula", "Muthoni", "Kariuki", "Moraa"];
+
+    function updateUI() {
+        balDisplay.innerText = balance;
+        historyBar.innerHTML = '';
+        history.slice(-6).reverse().forEach(val => {
+            const span = document.createElement('div');
+            span.className = 'hist-item';
+            span.innerText = val + 'x';
+            historyBar.appendChild(span);
+        });
+    }
+
+    function addWinner() {
+        if (!isFlying) return;
+        const name = fakePlayers[Math.floor(Math.random() * fakePlayers.length)];
+        const bet = Math.floor(Math.random() * 800) + 20;
+        const cashOutAt = (Math.random() * (multiplier - 1.05) + 1.05).toFixed(2);
+        const win = Math.floor(bet * cashOutAt);
+        const row = document.createElement('div');
+        row.className = 'winner-row';
+        row.innerHTML = `<span>${name}</span> <span>${cashOutAt}x</span> <span class="win-amt">Ksh ${win}</span>`;
+        winnersList.prepend(row);
+        if (winnersList.children.length > 15) winnersList.removeChild(winnersList.lastChild);
+    }
+
+    function drawGraph() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath(); ctx.strokeStyle = "#ff0055"; ctx.lineWidth = 4; ctx.moveTo(0, canvas.height);
+        for (let i = 0; i < frame; i++) {
+            let x = (i / 400) * canvas.width;
+            let y = canvas.height - Math.pow(i / 100, 2);
+            ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        let lastX = (frame / 400) * canvas.width, lastY = canvas.height - Math.pow(frame / 100, 2);
+        ctx.fillStyle = "white"; ctx.font = "24px Arial"; ctx.fillText("✈️", lastX - 10, lastY + 10);
+    }
+
+    function gameLoop() {
+        if (!isFlying) return;
+        frame++;
+        multiplier += 0.003 + (frame / 15000);
+        multDisplay.innerText = multiplier.toFixed(2) + "x";
+        if (betPlaced) {
+            profitDisplay.innerText = `Profit: Ksh ${Math.floor(currentBet * multiplier)}`;
+            profitDisplay.style.display = "block";
+        }
+        if (frame % 80 === 0) addWinner();
+        drawGraph();
+        if (multiplier >= crashPoint) {
+            isFlying = false;
+            sfxFly.pause(); sfxFly.currentTime = 0;
+            sfxCrash.play();
+            multDisplay.style.color = "#ff0055";
+            statusText.innerText = `FLEW AWAY! @ ${multiplier.toFixed(2)}x`;
+            profitDisplay.style.display = "none";
+            history.push(multiplier.toFixed(2));
+            localStorage.setItem('realPesaHistory', JSON.stringify(history));
+            updateUI();
+            setTimeout(startWaitingPeriod, 3000);
+        } else { requestAnimationFrame(gameLoop); }
+    }
+
+    function startWaitingPeriod() {
+        isFlying = false; betBtn.disabled = betPlaced; 
+        if(!betPlaced) betBtn.innerText = "PLACE BET";
+        cashBtn.disabled = true; winnersList.innerHTML = '';
+        let countdown = 5;
+        let timer = setInterval(() => {
+            statusText.innerText = `Next Round in ${countdown}s`;
+            countdown--;
+            if (countdown < 0) { clearInterval(timer); startFlight(); }
+        }, 1000);
+    }
+
+    function startFlight() {
+        isFlying = true; frame = 0; multiplier = 1.00;
+        crashPoint = (Math.random() * 8 + 2.10).toFixed(2);
+        statusText.innerText = betPlaced ? "In Flight!" : "Watching...";
+        if (betPlaced) cashBtn.disabled = false;
+        multDisplay.style.color = "white";
+        try { sfxFly.loop = true; sfxFly.play(); } catch(e){}
+        gameLoop();
+    }
+
+    betBtn.addEventListener('click', () => {
+        let amt = parseInt(betInput.value);
+        if (amt > balance || amt <= 0) return alert("Low Balance!");
+        balance -= amt; currentBet = amt; betPlaced = true;
+        betBtn.disabled = true; betBtn.innerText = "BET PLACED";
+        localStorage.setItem('realPesaBalance', balance);
+        updateUI();
+    });
+
+    cashBtn.addEventListener('click', () => {
+        if (isFlying && betPlaced) {
+            try { sfxWin.play(); } catch(e){}
+            let win = Math.floor(currentBet * multiplier);
+            balance += win; betPlaced = false; cashBtn.disabled = true;
+            statusText.innerText = `WON: Ksh ${win}!`;
+            localStorage.setItem('realPesaBalance', balance);
+            updateUI();
+        }
+    });
+
+    canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+    updateUI();
+    startWaitingPeriod();
+</script>
+</body>
+</html>
