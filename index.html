@@ -18,6 +18,7 @@
         button { padding: 14px; font-size: 1.1rem; cursor: pointer; border-radius: 8px; border: none; font-weight: bold; text-transform: uppercase; transition: 0.2s; width: 100%; }
         #betBtn { background: #28a745; color: white; }
         #cashBtn { background: #ffc107; color: black; }
+        #whatsappBtn { background: #25D366; color: white; text-decoration: none; display: block; padding: 10px; border-radius: 8px; font-size: 0.9rem; }
         #status { margin-top: 8px; font-size: 1rem; color: #ffc107; min-height: 1.2rem; font-weight: bold; }
         #profit-tracker { color: #00ff88; font-weight: bold; font-size: 1.2rem; margin-bottom: 5px; display: none; }
         .pochi-box { background: #111; padding: 12px; border-radius: 8px; border: 1px dashed #00ff88; font-size: 0.9rem; color: #00ff88; line-height: 1.4; }
@@ -30,7 +31,7 @@
 <div id="game-container">
     <div class="header">
         <span>REAL-PESA</span>
-        <span>Ksh <span id="balance">1000</span></span>
+        <span>Ksh <span id="balance">0</span></span>
     </div>
     <div class="history-bar" id="historyBar"></div>
     <div id="canvas-wrapper">
@@ -39,23 +40,29 @@
     </div>
     <div class="controls">
         <div id="profit-tracker">Profit: Ksh 0</div>
-        <input type="number" id="betAmount" value="100" step="10">
+        <input type="number" id="betAmount" value="10" step="10">
         <button id="betBtn">PLACE BET</button>
         <button id="cashBtn" disabled>CASH OUT</button>
         <div id="status">Loading...</div>
     </div>
+    
     <div class="winners-section">
         <div class="winners-title">LIVE BETS / TOP WINNERS</div>
         <div id="winnersList"></div>
     </div>
+
     <div class="action-section">
-        <strong style="color: #007bff; font-size: 0.9rem;">DEPOSIT</strong>
+        <strong style="color: #007bff; font-size: 0.9rem;">DEPOSIT & HELP</strong>
         <div class="pochi-box">
             Lipa na M-PESA Pochi: <br>
             <strong style="font-size: 1.2rem;">0797097831</strong>
         </div>
+        <a id="whatsappBtn" href="https://wa.me/254797097831?text=I%20want%20to%20deposit%20to%20Real-pesa" target="_blank">
+            Chat with Support (WhatsApp)
+        </a>
     </div>
 </div>
+
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -69,7 +76,9 @@
     const profitDisplay = document.getElementById('profit-tracker');
     const winnersList = document.getElementById('winnersList');
     
-    let multiplier = 1.00, isFlying = false, betPlaced = false, balance = parseInt(localStorage.getItem('realPesaBalance')) || 1000;
+    // STARTING BALANCE IS NOW 0
+    let multiplier = 1.00, isFlying = false, betPlaced = false;
+    let balance = parseInt(localStorage.getItem('realPesaBalance')) || 0;
     let history = JSON.parse(localStorage.getItem('realPesaHistory')) || [], currentBet = 0, crashPoint = 0, frame = 0;
     const fakePlayers = ["Musa_K", "Jabet_254", "Otieno_Pro", "SarahW", "Kamau_G", "Liz_B", "Brian_K", "Dancan_M", "Mercy_T", "Kiptoo"];
 
@@ -116,16 +125,13 @@
         frame++;
         multiplier += 0.002 + (frame / 15000);
         multDisplay.innerText = multiplier.toFixed(2) + "x";
-        
         if (betPlaced) {
             let currentProfit = Math.floor(currentBet * multiplier);
             profitDisplay.innerText = `Profit: Ksh ${currentProfit}`;
             profitDisplay.style.display = "block";
         }
-
         if (frame % 200 === 0 && Math.random() > 0.5) addWinner();
         drawGraph();
-
         if (multiplier >= crashPoint) {
             isFlying = false;
             multDisplay.style.color = "#ff0055";
@@ -153,16 +159,11 @@
 
     function startFlight() {
         isFlying = true; frame = 0; multiplier = 1.00;
-        
-        // --- HIGH FLYER LOGIC ---
-        // 70% chance to fly between 2.00x and 6.00x
-        // 30% chance to fly between 1.10x and 2.00x
         if (Math.random() < 0.7) {
             crashPoint = (Math.random() * 4 + 2.0).toFixed(2);
         } else {
             crashPoint = (Math.random() * 0.9 + 1.1).toFixed(2);
         }
-        
         statusText.innerText = betPlaced ? "In Flight!" : "Watching Flight...";
         if (betPlaced) cashBtn.disabled = false;
         multDisplay.style.color = "white";
@@ -171,7 +172,7 @@
 
     betBtn.addEventListener('click', () => {
         let amt = parseInt(betInput.value);
-        if (amt > balance || amt <= 0) return alert("Check Balance!");
+        if (amt > balance || amt <= 0) return alert("Low Balance! Please deposit via WhatsApp or Pochi.");
         balance -= amt; currentBet = amt; betPlaced = true;
         betBtn.disabled = true; betBtn.innerText = "BET PLACED";
         localStorage.setItem('realPesaBalance', balance);
@@ -197,5 +198,8 @@
     updateUI();
     startWaitingPeriod();
 </script>
+</body>
+</html>
+    >
 </body>
 </html>
