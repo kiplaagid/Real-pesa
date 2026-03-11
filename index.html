@@ -1,103 +1,111 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Real-pesa | 24/7 Live</title>
+<title>Real-pesa | Live</title>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <style>
-:root{--p:#2e7d32;--m:#66bb6a;--d:#0a0a0a;--r:#ff5252;--g:#1a1a1a;}body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--d);color:#fff;text-align:center;overflow-x:hidden;}
-header{background:linear-gradient(to bottom, var(--p), #1b5e20);padding:20px;font-weight:bold;cursor:pointer;}.logo{font-size:1.5rem;letter-spacing:2px;text-shadow:2px 2px #000;}
-.hist{background:var(--g);padding:10px;display:flex;justify-content:center;gap:8px;font-size:0.75rem;border-bottom:1px solid #333;}
-.h-item{background:#444;padding:4px 10px;border-radius:15px;color:var(--m);font-weight:bold;}.game{background:radial-gradient(circle, #222 0%, #000 100%);margin:15px;height:160px;border-radius:15px;border:1px solid #444;display:flex;flex-direction:column;justify-content:center;}
-#mult{font-size:4rem;font-weight:bold;transition:0.05s;}.ctrl{padding:20px;background:var(--g);margin:15px;border-radius:20px;border:1px solid #333;}
-input{width:80%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #444;background:#111;color:#fff;}
-.btn{width:95%;padding:18px;border:none;border-radius:12px;font-weight:bold;font-size:1.2rem;cursor:pointer;margin-bottom:12px;text-transform:uppercase;}
-.bet{background:var(--m);color:#fff;}.cash{background:#fbc02d;color:#000;display:none;}.wd-btn{background:#25d366;color:#fff;font-size:0.9rem;padding:12px;}.dep-btn{background:var(--p);color:#fff;font-size:0.9rem;padding:12px;}
-.tx-list{margin:15px;background:var(--g);padding:15px;border-radius:15px;border:1px solid #333;text-align:left;}
-.tx-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #222;font-size:0.8rem;}
-.win-c{color:var(--m);font-weight:bold;}.loss-c{color:var(--r);}
-.footer-box{background: #1a1a1a; padding: 15px; border-top: 1px solid #333; margin-top: 20px;}
-.live-tag { background: #ff5252; color: white; padding: 2px 5px; border-radius: 4px; font-size: 0.6rem; margin-right: 5px; animation: pulse 1s infinite; }
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-@keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+:root{--p:#2e7d32;--m:#66bb6a;--d:#0a0a0a;--r:#ff5252;--g:#1a1a1a;}
+body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--d);color:#fff;text-align:center;overflow-x:hidden;}
+header{background:var(--p);padding:15px;font-weight:bold;cursor:pointer;border-bottom:2px solid #1b5e20;}
+.logo{font-size:1.6rem;letter-spacing:1px;text-transform:uppercase;font-weight:900;}
+.hist{background:var(--g);padding:10px;font-size:0.75rem;border-bottom:1px solid #333;color:#aaa;}
+.h-item{background:#333;padding:3px 8px;border-radius:10px;color:var(--m);font-weight:bold;margin:0 4px;}
+.game{background:linear-gradient(180deg, #111 0%, #000 100%);margin:15px;height:200px;border-radius:20px;border:1px solid #333;display:flex;flex-direction:column;justify-content:center;position:relative;}
+#mult{font-size:4.5rem;font-weight:bold;margin:0;}
+#stat{color:#aaa;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;}
+.ctrl{padding:25px 20px;background:var(--g);margin:15px;border-radius:25px;border:1px solid #333;}
+#bal{color:var(--m);font-weight:bold;font-size:1.1rem;margin-bottom:15px;display:block;}
+input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px solid #444;background:#111;color:#fff;font-size:1rem;text-align:center;}
+.btn{width:100%;padding:20px;border:none;border-radius:15px;font-weight:bold;font-size:1.4rem;cursor:pointer;margin-bottom:15px;text-transform:uppercase;transition:0.2s;}
+.bet{background:var(--m);color:#fff;box-shadow:0 4px #2e7d32;}
+.cash{background:#fbc02d;color:#000;display:none;}
+.flex-btns{display:flex;gap:12px;}
+.dep-btn{background:var(--p);color:#fff;flex:1;font-size:1rem;padding:15px;border-radius:12px;}
+.wd-btn{background:#25d366;color:#fff;flex:1;font-size:1rem;padding:15px;border-radius:12px;}
+.tx-list{margin:15px;background:var(--g);padding:18px;border-radius:20px;border:1px solid #333;text-align:left;}
+.tx-header{font-weight:bold;color:var(--m);margin-bottom:12px;display:block;}
+.tx-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #222;font-size:0.85rem;}
+.live-tag{background:var(--r);color:white;padding:2px 6px;border-radius:4px;font-size:0.6rem;font-weight:bold;margin-right:8px;animation:pulse 1.5s infinite;}
+.win-c{color:var(--m);font-weight:bold;}
+.footer-box{background:#0a0a0a;padding:20px;border-top:1px solid #222;margin-top:20px;}
+@keyframes pulse{0%{opacity:1;}50%{opacity:0.6;}100%{opacity:1;}}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
 </style></head><body>
-<audio id="bgMusic" loop><source src="music.mp3" type="audio/mpeg"></audio>
+
 <header onclick="showAdmin()"><div class="logo">REAL-PESA</div></header>
-<div class="hist" id="hist"><span>History:</span></div>
-<div class="game"><div id="mult">1.00x</div><div id="stat" style="color:#aaa;font-size:0.8rem;">FLYING...</div></div>
+<div class="hist" id="hist">History:</div>
+
+<div class="game">
+    <div id="mult">1.00x</div>
+    <div id="stat">FLYING...</div>
+</div>
+
 <div class="ctrl">
-    <div style="margin-bottom:10px;color:var(--m);">Wallet: <span id="bal" style="font-weight:bold;">KES 0.00</span></div>
+    <span id="bal">Wallet: KES 0.00</span>
     <input type="number" id="amt" placeholder="Bet Amount">
-    <button id="betBtn" class="btn bet" onclick="placeBet()">Place Bet</button>
+    <button id="betBtn" class="btn bet" onclick="placeBet()">PLACE BET</button>
     <button id="cashBtn" class="btn cash" onclick="cashOut()">CASH OUT</button>
-    <div style="display:flex;gap:10px;"><button class="btn dep-btn" style="flex:1;" onclick="deposit()">Deposit</button><button class="btn wd-btn" style="flex:1;" onclick="withdraw()">Withdraw</button></div>
+    <div class="flex-btns">
+        <button class="btn dep-btn" onclick="deposit()">DEPOSIT</button>
+        <button class="btn wd-btn" onclick="withdraw()">WITHDRAW</button>
+    </div>
 </div>
-<div class="tx-list"><div style="font-weight:bold;margin-bottom:10px;color:var(--m);">Recent Transactions</div><div id="tx-data"></div></div>
+
+<div class="tx-list">
+    <span class="tx-header">Recent Transactions</span>
+    <div id="tx-data"></div>
+</div>
+
 <div class="footer-box">
-    <div style="color: #66bb6a; font-weight: bold; font-size: 0.9rem;">OFFICIAL POCHI LA BIASHARA</div>
-    <div style="font-size: 1.1rem; margin: 5px 0;">0797097831</div>
-    <div style="font-size: 0.7rem; color: #888;">Send funds then WhatsApp confirmed message for approval.</div>
+    <div style="color:var(--m);font-weight:bold;font-size:0.9rem;">OFFICIAL POCHI LA BIASHARA</div>
+    <div style="font-size:1.3rem;margin:8px 0;font-weight:bold;">0797097831</div>
+    <div style="font-size:0.75rem;color:#777;">Send funds then WhatsApp confirmed message for approval.</div>
 </div>
+
 <script>
-// --- PASTE YOUR FIREBASE CONFIG HERE ---
-const firebaseConfig = { apiKey: "YOUR_KEY", authDomain: "YOUR_DOMAIN", projectId: "YOUR_ID", storageBucket: "YOUR_BUCKET", appId: "YOUR_APP_ID" };
+// PASTE FIREBASE CONFIG HERE
+const firebaseConfig = { apiKey: "YOUR_KEY", projectId: "YOUR_ID", appId: "YOUR_APP" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=false, txs=[], currentUser="Guest_" + Math.floor(Math.random()*999);
-const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('betBtn'), cb=document.getElementById('cashBtn'), bl=document.getElementById('bal'), td=document.getElementById('tx-data'), music=document.getElementById('bgMusic');
+let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=false, currentUser="User_"+Math.floor(Math.random()*999);
+const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('betBtn'), cb=document.getElementById('cashBtn'), bl=document.getElementById('bal'), td=document.getElementById('tx-data');
 
 window.onload = () => {
     loop(); 
-    music.play().catch(()=>{}); 
-    db.collection("players").doc(currentUser).onSnapshot((doc) => { if(doc.exists) { wallet = doc.data().balance; bl.innerText="KES "+wallet.toFixed(2); renderTxs(); }});
-    setInterval(triggerWinnerAlert, 10000); 
-    setInterval(addFakeTxRow, 6000);
+    setInterval(addFakeTx, 5000); 
+    setInterval(triggerWinAlert, 12000);
 };
 
 function loop(){ 
-    isFlying=true; m=1.0; x.style.color="#fff"; s.innerText = "FLYING...";
-    nextCrash = (Math.random()*6 + 1.1).toFixed(2); 
-    if(isAdmin) s.innerText = "PRED: " + nextCrash + "x";
-    iv=setInterval(()=>{ 
-        m+=0.01; x.innerText=m.toFixed(2)+"x"; 
-        if(m>=nextCrash){ 
-            clearInterval(iv); isFlying=false; addH(m.toFixed(2)); 
-            x.innerText="CRASHED!"; x.style.color="var(--r)"; s.innerText = "NEXT ROUND SOON...";
-            b.style.display="block"; cb.style.display="none"; myBet=0; setTimeout(loop, 3000); 
-        } 
-    },100); 
+    isFlying=true; m=1.0; x.style.color="#fff"; s.innerText="FLYING...";
+    nextCrash=(Math.random()*5+1.2).toFixed(2);
+    iv=setInterval(()=>{
+        m+=0.01; x.innerText=m.toFixed(2)+"x";
+        if(m>=nextCrash){
+            clearInterval(iv); isFlying=false; x.innerText="CRASHED!"; x.style.color="var(--r)"; s.innerText="NEXT ROUND SOON...";
+            b.style.display="block"; cb.style.display="none"; myBet=0; setTimeout(loop, 3500);
+        }
+    },100);
 }
 
-const fakeNames = ["Kamau", "Ochieng", "Moraa", "Fatuma", "Kiprono", "Njeri", "Mwangi", "Wanjiku"];
-const fakeAmts = [250, 500, 1200, 300, 4500, 800, 1500, 600];
-
-function triggerWinnerAlert() {
-    const name = fakeNames[Math.floor(Math.random() * fakeNames.length)];
-    const amt = fakeAmts[Math.floor(Math.random() * fakeAmts.length)];
-    const toast = document.createElement("div");
-    toast.style.cssText = `position: fixed; top: 10px; right: 10px; background: #1a1a1a; color: white; padding: 12px; border-radius: 8px; z-index: 9999; font-size: 0.8rem; border-left: 4px solid #66bb6a; box-shadow: 0 4px 10px rgba(0,0,0,0.8); animation: slideIn 0.5s ease-out;`;
-    toast.innerHTML = `🎉 <b>${name}</b> just withdrew <span class="win-c">KES ${amt}</span>!`;
-    document.body.appendChild(toast);
-    setTimeout(() => { toast.style.animation = "slideOut 0.5s ease-in"; setTimeout(() => toast.remove(), 500); }, 4000);
+function addFakeTx() {
+    const names=["Kamau","Fatuma","Kiprono","Moraa","Achieng","Njeri"], amts=[250, 1200, 4500, 800, 150, 3000];
+    const n=names[Math.floor(Math.random()*names.length)], a=amts[Math.floor(Math.random()*amts.length)];
+    const row=document.createElement("div"); row.className="tx-item";
+    row.innerHTML=`<span><span class="live-tag">LIVE</span> ${n} - Won Round</span><span class="win-c">KES ${a}</span>`;
+    td.insertBefore(row, td.firstChild); if(td.children.length>6) td.lastChild.remove();
 }
 
-function addFakeTxRow() {
-    const name = fakeNames[Math.floor(Math.random() * fakeNames.length)];
-    const amt = fakeAmts[Math.floor(Math.random() * fakeAmts.length)];
-    const type = Math.random() > 0.3 ? "Won Round" : "Deposit";
-    const row = document.createElement("div");
-    row.className = "tx-item";
-    row.innerHTML = `<span><span class="live-tag">LIVE</span> ${name} - ${type}</span><span class="win-c">KES ${amt}</span>`;
-    if (td) { td.insertBefore(row, td.firstChild); if (td.children.length > 8) td.lastChild.remove(); }
+function triggerWinAlert() {
+    const n=currentUser, a=(Math.random()*1000+200).toFixed(0);
+    const toast=document.createElement("div");
+    toast.style.cssText=`position:fixed;top:15px;right:15px;background:#1a1a1a;color:#fff;padding:15px;border-radius:12px;border-left:5px solid var(--m);box-shadow:0 10px 20px rgba(0,0,0,0.5);z-index:99;animation:slideIn 0.5s ease-out;`;
+    toast.innerHTML=`🎉 <b>${n}</b> just won <b>KES ${a}</b>!`;
+    document.body.appendChild(toast); setTimeout(()=>toast.remove(), 4000);
 }
 
-async function updateDb() { await db.collection("players").doc(currentUser).update({ balance: wallet, transactions: txs }); }
-function renderTxs(){ /* Handled by Live Feed and local user txs */ }
-async function addTx(type, amt){ txs.unshift({type: type, amt: amt}); if(txs.length > 5) txs.pop(); await updateDb(); }
-function showAdmin(){ isAdmin=!isAdmin; let cmd = prompt(isAdmin?"Admin Active. Type 'add':":"OFF"); if(cmd==="add"){ let a=parseFloat(prompt("Amount?")); wallet += a; addTx("Admin Deposit", a); } }
-function addH(v){h.unshift(v);if(h.length>6)h.pop();let html='<span>History:</span>';h.forEach(i=>{html+=`<span class="h-item">${i}x</span>`});document.getElementById('hist').innerHTML=html;}
-async function placeBet(){ let a=parseFloat(document.getElementById('amt').value)||10; if(wallet < a){ alert("Low Balance!"); return; } myBet=a; wallet -= a; await addTx("Place Bet", -a); b.style.display="none"; cb.style.display="block"; }
-async function cashOut(){ if(myBet>0 && isFlying){ let win = (myBet * m); wallet += win; await addTx("Won Round", win.toFixed(0)); b.style.display="block"; cb.style.display="none"; myBet=0; alert("Won KES "+win.toFixed(2)); } }
-function deposit(){ window.location.href=`https://wa.me/254797097831?text=Deposit%20Guest:%20${currentUser}`; }
-function withdraw(){ window.location.href=`https://wa.me/254797097831?text=Withdraw%20Request:%20KES%20${wallet}%20Guest:%20${currentUser}`; }
+function deposit(){ window.location.href="https://wa.me/254797097831?text=Deposit%20ID:%20"+currentUser; }
+function withdraw(){ window.location.href="https://wa.me/254797097831?text=Withdraw%20ID:%20"+currentUser; }
+function placeBet(){ let a=parseFloat(document.getElementById('amt').value); if(wallet<a){alert("Low Balance!");return;} myBet=a; wallet-=a; b.style.display="none"; cb.style.display="block"; }
+function cashOut(){ if(myBet>0 && isFlying){ let w=myBet*m; wallet+=w; b.style.display="block"; cb.style.display="none"; myBet=0; alert("Won KES "+w.toFixed(2)); } }
 </script></body></html>
