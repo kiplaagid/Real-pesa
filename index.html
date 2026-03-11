@@ -1,5 +1,8 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Real-pesa | Official</title><style>
+<title>Real-pesa | Official</title>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<style>
 :root{--p:#2e7d32;--m:#66bb6a;--d:#0a0a0a;--r:#ff5252;--g:#1a1a1a;}body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--d);color:#fff;text-align:center;overflow-x:hidden;}
 header{background:linear-gradient(to bottom, var(--p), #1b5e20);padding:20px;font-weight:bold;cursor:pointer;}.logo{font-size:1.5rem;letter-spacing:2px;text-shadow:2px 2px #000;}
 #login-scr{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--d);z-index:100;display:flex;flex-direction:column;justify-content:center;align-items:center;}
@@ -33,18 +36,61 @@ input{width:80%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #4
     <div style="font-size: 0.7rem; color: #888;">Send funds then WhatsApp confirmed message for approval.</div>
 </div>
 <script>
-let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=false, txs=[];
+// --- PASTE YOUR FIREBASE CONFIG HERE ---
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_ID",
+  storageBucket: "YOUR_BUCKET",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=false, txs=[], currentUser="";
 const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('betBtn'), cb=document.getElementById('cashBtn'), bl=document.getElementById('bal'), td=document.getElementById('tx-data'), music=document.getElementById('bgMusic');
-function save(){ localStorage.setItem('rp_bal', wallet); localStorage.setItem('rp_txs', JSON.stringify(txs)); bl.innerText="KES "+wallet.toFixed(2); renderTxs(); }
+
+async function syncWallet(user) {
+    const docRef = db.collection("players").doc(user);
+    const doc = await docRef.get();
+    if (doc.exists) { wallet = doc.data().balance; txs = doc.data().transactions || []; } 
+    else { await docRef.set({ balance: 0, transactions: [] }); wallet = 0; }
+    saveLocally();
+}
+
+async function updateDb() { await db.collection("players").doc(currentUser).update({ balance: wallet, transactions: txs }); }
+
+function saveLocally(){ bl.innerText="KES "+wallet.toFixed(2); renderTxs(); }
+
 function renderTxs(){ td.innerHTML = txs.map(t => `<div class="tx-item"><span>${t.type}</span><span class="${t.amt >=0?'win-c':'loss-c'}">KES ${t.amt}</span></div>`).join(''); }
-function addTx(type, amt){ txs.unshift({type: type, amt: amt}); if(txs.length > 5) txs.pop(); save(); }
-function login(){ let u=document.getElementById('u-name').value; if(u){ wallet = parseFloat(localStorage.getItem('rp_bal')) || 0; txs = JSON.parse(localStorage.getItem('rp_txs')) || []; document.getElementById('login-scr').style.display='none'; music.play().catch(()=>{}); save(); loop(); } }
-function showAdmin(){ isAdmin=!isAdmin; let cmd = prompt(isAdmin?"Admin Active. Type 'add' to boost wallet:":"Admin OFF"); if(cmd==="add"){ let a=parseFloat(prompt("Amount?")); wallet += a; addTx("Admin Deposit", a); } }
+
+async function addTx(type, amt){ txs.unshift({type: type, amt: amt}); if(txs.length > 5) txs.pop(); await updateDb(); saveLocally(); }
+
+async function login(){ 
+    let u=document.getElementById('u-name').value; 
+    if(u){ 
+        currentUser = u.toLowerCase().trim();
+        await syncWallet(currentUser);
+        document.getElementById('login-scr').style.display='none'; 
+        music.play().catch(()=>{}); 
+        loop(); 
+        db.collection("players").doc(currentUser).onSnapshot((doc) => { if (doc.exists) { wallet = doc.data().balance; saveLocally(); } });
+    } 
+}
+
+function showAdmin(){ isAdmin=!isAdmin; let cmd = prompt(isAdmin?"Admin Active. Type 'add' to boost:":"Admin OFF"); if(cmd==="add"){ let a=parseFloat(prompt("Amount?")); wallet += a; addTx("Admin Deposit", a); } }
+
 function addH(v){h.unshift(v);if(h.length>6)h.pop();let html='<span>History:</span>';h.forEach(i=>{html+=`<span class="h-item">${i}x</span>`});document.getElementById('hist').innerHTML=html;}
-function loop(){ isFlying=true; m=1.0; x.style.color="#fff"; nextCrash = (Math.random()*7+1.05).toFixed(2); if(isAdmin) s.innerText = "PREDICTION: " + nextCrash + "x";
+
+function loop(){ isFlying=true; m=1.0; x.style.color="#fff"; nextCrash = (Math.random()*7+1.05).toFixed(2); if(isAdmin) s.innerText = "PRED: " + nextCrash + "x";
     iv=setInterval(()=>{ m+=0.01; x.innerText=m.toFixed(2)+"x"; if(m>=nextCrash){ clearInterval(iv); isFlying=false; addH(m.toFixed(2)); x.innerText="FLEW AWAY!"; x.style.color="var(--r)"; b.style.display="block"; cb.style.display="none"; myBet=0; setTimeout(loop, 4000); } },100); }
-function placeBet(){ let a=parseFloat(document.getElementById('amt').value)||10; if(wallet < a){ alert("Low Balance!"); return; } myBet=a; wallet -= a; addTx("Place Bet", -a); b.style.display="none"; cb.style.display="block"; }
-function cashOut(){ if(myBet>0 && isFlying){ let win = (myBet * m); wallet += win; addTx("Won Round", win.toFixed(0)); b.style.display="block"; cb.style.display="none"; myBet=0; alert("Won KES "+win.toFixed(2)); } }
-function deposit(){ alert("PAY TO POCHI: 0797097831\n\nAfter paying, send the WhatsApp message for approval."); window.location.href=`https://wa.me/254797097831?text=I%20have%20deposited.%20Username:%20${document.getElementById('u-name').value}`; }
-function withdraw(){ window.location.href=`https://wa.me/254797097831?text=Withdraw%20Request:%20KES%20${wallet}`; }
+
+async function placeBet(){ let a=parseFloat(document.getElementById('amt').value)||10; if(wallet < a){ alert("Low Balance!"); return; } myBet=a; wallet -= a; await addTx("Place Bet", -a); b.style.display="none"; cb.style.display="block"; }
+
+async function cashOut(){ if(myBet>0 && isFlying){ let win = (myBet * m); wallet += win; await addTx("Won Round", win.toFixed(0)); b.style.display="block"; cb.style.display="none"; myBet=0; alert("Won KES "+win.toFixed(2)); } }
+
+function deposit(){ alert("PAY TO POCHI: 0797097831\n\nAfter paying, send the WhatsApp message for approval."); window.location.href=`https://wa.me/254797097831?text=I%20have%20deposited.%20Username:%20${currentUser}`; }
+
+function withdraw(){ window.location.href=`https://wa.me/254797097831?text=Withdraw%20Request:%20KES%20${wallet}%20User:%20${currentUser}`; }
 </script></body></html>
+    
