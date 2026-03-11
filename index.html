@@ -1,81 +1,31 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Real-pesa | Live</title>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-<style>
-:root{--p:#2e7d32;--m:#66bb6a;--d:#0a0a0a;--r:#ff5252;--g:#1a1a1a;}
-body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--d);color:#fff;text-align:center;overflow-x:hidden;}
-header{background:var(--p);padding:15px;font-weight:bold;cursor:pointer;border-bottom:2px solid #1b5e20;position:relative;}
-.logo{font-size:1.6rem;letter-spacing:1px;text-transform:uppercase;font-weight:900;}
-#bal{position:absolute;right:10px;top:20px;font-size:0.75rem;color:#fff;background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:5px;}
-.how-to{background:#1a1a1a;margin:10px;padding:12px;border-radius:12px;border:1px solid #333;text-align:left;font-size:0.8rem;color:#ccc;}
-.how-to b{color:var(--m);display:block;margin-bottom:4px;}
-.hist{background:var(--g);padding:10px;font-size:0.75rem;border-bottom:1px solid #333;color:#aaa;white-space:nowrap;overflow-x:auto;display:flex;align-items:center;gap:8px;}
-.h-item{background:#333;padding:4px 10px;border-radius:20px;color:var(--m);font-weight:bold;flex-shrink:0;}
-.h-item.crash{color:var(--r);}
-.game{background:linear-gradient(180deg, #111 0%, #000 100%);margin:15px;height:200px;border-radius:20px;border:1px solid #333;display:flex;flex-direction:column;justify-content:center;position:relative;}
-#mult{font-size:4.5rem;font-weight:bold;margin:0;}
-#stat{color:#aaa;font-size:0.8rem;letter-spacing:2px;text-transform:uppercase;}
-.ctrl{padding:25px 20px;background:var(--g);margin:15px;border-radius:25px;border:1px solid #333;}
-input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px solid #444;background:#111;color:#fff;font-size:1rem;text-align:center;}
-.btn{width:100%;padding:20px;border:none;border-radius:15px;font-weight:bold;font-size:1.4rem;cursor:pointer;margin-bottom:15px;text-transform:uppercase;}
-.bet{background:var(--m);color:#fff;}
-.cash{background:#fbc02d;color:#000;display:none;}
-.dep-btn{background:var(--p);color:#fff;flex:1;padding:15px;border-radius:12px;font-size:1rem;}
-.wd-btn{background:#25d366;color:#fff;flex:1;padding:15px;border-radius:12px;font-size:1rem;}
-.tx-list{margin:15px;background:var(--g);padding:18px;border-radius:20px;border:1px solid #333;text-align:left;max-height: 250px; overflow: hidden;}
-.tx-header{font-weight:bold;color:var(--m);margin-bottom:12px;display:block;}
-.tx-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #222;font-size:0.85rem;}
-.win-c{color:var(--m);font-weight:bold;}
-.footer-box{background:#0a0a0a;padding:20px;border-top:1px solid #222;margin-top:20px;}
-.dep-steps{text-align:left;font-size:0.8rem;color:#aaa;margin-bottom:15px;background:#111;padding:10px;border-radius:10px;}
-</style></head><body>
-<header><div class="logo">REAL-PESA</div><span id="bal">Wallet: KES 0.00</span></header>
-<div class="how-to"><b>HOW TO PLAY:</b> 1. Enter Bet. 2. Tap PLACE BET. 3. CASH OUT before crash!</div>
-<div class="hist" id="roundHist">History: <span class="h-item">1.54x</span></div>
-<div class="game"><div id="mult">1.00x</div><div id="stat">READY</div></div>
-<div class="ctrl">
-    <input type="number" id="amt" placeholder="Bet Amount">
-    <button id="betBtn" class="btn bet">PLACE BET</button>
-    <button id="cashBtn" class="btn cash">CASH OUT</button>
-    <div style="display:flex;gap:10px;"><button class="dep-btn" onclick="deposit()">DEPOSIT</button><button class="wd-btn">WITHDRAW</button></div>
-</div>
-<div class="tx-list"><span class="tx-header">Recent Transactions</span><div id="tx-data"></div></div>
-<div class="footer-box">
-    <div class="dep-steps"><b>HOW TO DEPOSIT:</b> 1. M-PESA > Lipa na M-PESA. 2. Pochi la Biashara. 3. Enter: 0797097831</div>
-    <div style="color:var(--m);font-weight:bold;">OFFICIAL POCHI: 0797097831</div>
-</div>
-<script>
-// Logic for the game multiplier and rounds
-let m=1.0, isFlying=false, iv;
-const x=document.getElementById('mult'), s=document.getElementById('stat'), rh=document.getElementById('roundHist');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-pesa Aviator</title>
+    <style>
+        body { background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; }
+        #game-container { margin-top: 50px; }
+        #multiplier { font-size: 3rem; color: #ff0055; }
+        canvas { background: #000; border: 2px solid #333; width: 90%; max-width: 500px; height: 300px; }
+        button { padding: 15px 30px; font-size: 1.2rem; margin: 10px; cursor: pointer; border-radius: 8px; border: none; }
+        #betBtn { background: #28a745; color: white; }
+        #cashOutBtn { background: #ffc107; color: black; }
+        button:disabled { background: #555; cursor: not-allowed; }
+    </style>
+</head>
+<body>
 
-window.onload = () => { loop(); startLiveTransactions(); };
+    <div id="game-container">
+        <h1 id="multiplier">1.00x</h1>
+        <canvas id="gameCanvas"></canvas>
+        <div>
+            <button id="betBtn">BET</button>
+            <button id="cashOutBtn" disabled>CASH OUT</button>
+        </div>
+    </div>
 
-function startLiveTransactions() {
-    const names = ["Kamau", "Fatuma", "Otieno", "Blessing", "Maina"];
-    setInterval(() => {
-        const name = names[Math.floor(Math.random()*names.length)];
-        const win = (Math.random()*4500+200).toFixed(0);
-        const html = `<div class="tx-item"><span>${name} - Won Round</span><span class="win-c">KES ${win}</span></div>`;
-        document.getElementById('tx-data').innerHTML = html + document.getElementById('tx-data').innerHTML;
-    }, 3500);
-}
-
-function loop(){ 
-    isFlying=true; m=1.0; x.style.color="#fff"; s.innerText="FLYING...";
-    let crash=(Math.random()*5+1.2).toFixed(2);
-    iv=setInterval(()=>{
-        m+=0.01; x.innerText=m.toFixed(2)+"x";
-        if(m>=crash){
-            clearInterval(iv); isFlying=false; x.innerText="CRASHED!"; x.style.color="#ff5252"; s.innerText="READY";
-            let item = document.createElement("span");
-            item.className = "h-item " + (crash < 2 ? "crash" : "");
-            item.innerText = crash + "x";
-            rh.insertBefore(item, rh.firstChild.nextSibling);
-            setTimeout(loop, 7000); 
-        }
-    },100);
-}
-function deposit(){ window.location.href="https://wa.me/254797097831"; }
-</script></body></html>
+    <script src="script.js"></script>
+</body>
+</html>
