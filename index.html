@@ -1,23 +1,48 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Real-pesa | Aviator</title><style>
-:root{--p:#1b5e20;--m:#4caf50;--d:#121212;}body{font-family:sans-serif;margin:0;background:#000;color:#fff;text-align:center;}
-header{background:var(--p);padding:15px;font-weight:bold;}.hist{background:#1a1a1a;padding:8px;display:flex;justify-content:center;gap:5px;font-size:0.7rem;overflow:hidden;border-bottom:1px solid #333;}
-.h-item{background:#333;padding:3px 8px;border-radius:10px;color:var(--m);}.game{background:var(--d);margin:10px;height:160px;border-radius:10px;border:2px solid #333;display:flex;flex-direction:column;justify-content:center;}
-#mult{font-size:3.5rem;font-weight:bold;}.ctrl{padding:20px;background:#1a1a1a;margin:10px;border-radius:15px;}
-input{width:90%;padding:12px;margin:10px 0;border-radius:8px;border:none;font-size:1.1rem;}.btn{width:95%;padding:15px;border:none;border-radius:10px;font-weight:bold;font-size:1.2rem;cursor:pointer;}
-.bet{background:var(--m);color:#fff;}.cash{background:#fbc02d;color:#000;}</style></head>
-<body><header>Real-pesa Aviator</header>
+<title>Real-pesa | Live</title><style>
+:root{--p:#1b5e20;--m:#4caf50;--d:#121212;--r:#ff4444;}body{font-family:sans-serif;margin:0;background:#000;color:#fff;text-align:center;overflow-x:hidden;}
+header{background:var(--p);padding:15px;font-weight:bold;}.hist{background:#1a1a1a;padding:8px;display:flex;justify-content:center;gap:5px;font-size:0.7rem;border-bottom:1px solid #333;}
+.h-item{background:#333;padding:3px 8px;border-radius:10px;color:var(--m);}.game{background:var(--d);margin:10px;height:150px;border-radius:10px;border:2px solid #333;display:flex;flex-direction:column;justify-content:center;}
+#mult{font-size:3.5rem;font-weight:bold; transition: 0.1s;} .ctrl{padding:15px;background:#1a1a1a;margin:10px;border-radius:15px;}
+input{width:90%;padding:10px;margin:10px 0;border-radius:8px;border:none;background:#222;color:#fff;}
+.btn{width:95%;padding:15px;border:none;border-radius:10px;font-weight:bold;font-size:1.1rem;cursor:pointer;}
+.bet{background:var(--m);color:#fff;}.cash{background:#fbc02d;color:#000;}.chat{margin:10px;background:#111;border-radius:10px;height:120px;display:flex;flex-direction:column;}
+#msgs{flex-grow:1;padding:10px;font-size:0.8rem;text-align:left;overflow-y:auto;color:#bbb;} .msg{margin-bottom:5px;} .msg b{color:var(--m);}
+</style></head><body><header>Real-pesa Live Aviator</header>
 <div class="hist" id="hist"><span>History:</span></div>
-<div class="game"><div id="mult">1.00x</div><div id="stat" style="color:#888;">Ready</div></div>
-<div class="ctrl"><div>Wallet: <span id="bal">KES 0.00</span></div><input type="number" id="amt" placeholder="Amount">
-<button id="btn" class="btn bet" onclick="go()">PLACE BET</button></div>
-<footer style="font-size:0.8rem;color:#888;">Pochi: <strong>0797097831</strong></footer>
-<script>let m=1.0,run=false,iv,h=[];function addH(val){h.unshift(val);if(h.length>5)h.pop();
-let html='<span>History:</span>';h.forEach(v=>{html+=`<span class="h-item">${v}x</span>`});document.getElementById('hist').innerHTML=html;}
-function go(){let b=document.getElementById('btn'),s=document.getElementById('stat'),x=document.getElementById('mult');
-if(!run){run=true;m=1.0;s.innerText="Flying...";s.style.color="#4caf50";b.innerText="CASH OUT";b.className="btn cash";
-let crash=Math.random()*5+1.1;iv=setInterval(()=>{m+=0.01;x.innerText=m.toFixed(2)+"x";if(m>=crash){clearInterval(iv);run=false;
-addH(m.toFixed(2));x.innerText="FLEW AWAY!";x.style.color="#f44336";b.innerText="PLACE BET";b.className="btn bet";
-setTimeout(()=>{x.style.color="#fff";x.innerText="1.00x";s.innerText="Ready";},2000);}},100);}
-else{clearInterval(iv);run=false;addH(m.toFixed(2));x.style.color="#4caf50";s.innerText="WON!";b.innerText="PLACE BET";b.className="btn bet";
-setTimeout(()=>{x.style.color="#fff";x.innerText="1.00x";s.innerText="Ready";},2000);}}</script></body></html>
+<div class="game"><div id="mult">1.00x</div><div id="stat" style="color:#888;">Next Round Starting...</div></div>
+<div class="ctrl"><div>Wallet: <span id="bal">KES 0.00</span></div><input type="number" id="amt" placeholder="Bet Amount">
+<button id="btn" class="btn bet" onclick="action()">PLACE BET</button></div>
+<div class="chat"><div id="msgs"><div class="msg"><b>System:</b> Welcome to Real-pesa!</div></div>
+<input type="text" id="c-in" placeholder="Say something..." onkeydown="if(event.key==='Enter')sendChat()" style="width:85%;margin:5px auto;padding:8px;"></div>
+<footer style="font-size:0.7rem;color:#888;padding-bottom:10px;">Pochi: 0797097831</footer>
+<script>
+let m=1.0, isFlying=false, myBet=0, h=[], iv;
+const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('btn');
+function addH(v){h.unshift(v);if(h.length>5)h.pop();let html='<span>History:</span>';h.forEach(i=>{html+=`<span class="h-item">${i}x</span>`});document.getElementById('hist').innerHTML=html;}
+function loop(){
+    isFlying=true; m=1.0; x.style.color="#fff"; s.innerText="Flying...";
+    let crash=Math.random()*6+1.1;
+    iv=setInterval(()=>{
+        m+=0.01; x.innerText=m.toFixed(2)+"x";
+        if(m>=crash){clearInterval(iv); isFlying=false; addH(m.toFixed(2));
+            x.innerText="FLEW AWAY!"; x.style.color="var(--r)"; s.innerText="Waiting for Next Round...";
+            if(myBet>0){ b.innerText="PLACE BET"; b.className="btn bet"; myBet=0; }
+            setTimeout(loop, 3000);
+        }
+    },100);
+}
+function action(){
+    if(myBet===0 && isFlying && m < 1.1){
+        myBet=document.getElementById('amt').value||10; b.innerText="CASH OUT"; b.className="btn cash";
+    }else if(myBet>0 && isFlying){
+        let win = (myBet * m).toFixed(2); alert("You Won KES "+win);
+        b.innerText="PLACE BET"; b.className="btn bet"; myBet=0;
+    }
+}
+function sendChat(){
+    const i=document.getElementById('c-in'), m=document.getElementById('msgs');
+    if(i.value){ m.innerHTML+=`<div class="msg"><b>User:</b> ${i.value}</div>`; m.scrollTop=m.scrollHeight; i.value=''; }
+}
+loop();
+</script></body></html>
