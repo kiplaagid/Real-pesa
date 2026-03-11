@@ -1,28 +1,9 @@
-<footer style="font-size: 0.8rem; color: #666; padding: 20px; border-top: 1px solid #222; margin-top: 20px;">
-    <strong>OFFICIAL REAL-PESA PAYBILL</strong><br>
-    Pochi la Biashara: <span style="color: #66bb6a;">0797097831</span><br>
-    <p style="font-size: 0.7rem;">Please send the exact amount and wait 2-5 minutes for verification.</p>
-</footer>
-
-<script>
-// ... (keep your existing login and game variables here)
-
-function deposit() {
-    const instructions = `HOW TO DEPOSIT:
-1. Go to M-PESA
-2. Select Lipa na M-PESA
-3. Select Pochi la Biashara
-4. Enter Number: 0797097831
-5. Enter Amount & PIN
-
-After payment, click 'OK' to send your transaction details via WhatsApp for instant approval.`;
-
-    alert(instructions);
-    
-    // This part opens WhatsApp to your number automatically
-    const whatsappUrl = "https://wa.me/254797097831?text=I%20have%20deposited.%20My%20Username:%20" + document.getElementById('u-name').value;
-    window.location.href = whatsappUrl;
-}
-
-// ... (keep your existing loop and action functions here)
-</script>
+<div style="background: #1a1a1a; padding: 15px; border-top: 1px solid #333; margin-top: 20px; border-radius: 15px 15px 0 0;">
+    <div style="color: #66bb6a; font-weight: bold; font-size: 0.9rem; margin-bottom: 5px;">OFFICIAL REAL-PESA DEPOSIT</div>
+    <div style="font-size: 0.85rem; color: #fff;">
+        Use Pochi la Biashara: <span style="color: #66bb6a; font-weight: bold;">0797097831</span>
+    </div>
+    <p style="font-size: 0.7rem; color: #888; margin-top: 5px;">
+        Send funds -> Send WhatsApp message -> Admin approves instantly.
+    </p>
+</div>
