@@ -1,71 +1,27 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Real-pesa | Live Pro</title><style>
-:root{--p:#1b5e20;--m:#4caf50;--d:#121212;--r:#ff4444;}body{font-family:sans-serif;margin:0;background:#000;color:#fff;text-align:center;overflow-x:hidden;}
-header{background:var(--p);padding:15px;font-weight:bold;}.live-n{font-size:0.7rem;color:#fbc02d;margin-top:5px;}
-.hist{background:#1a1a1a;padding:8px;display:flex;justify-content:center;gap:5px;font-size:0.7rem;border-bottom:1px solid #333;}
-.h-item{background:#333;padding:3px 8px;border-radius:10px;color:var(--m);}.game{background:var(--d);margin:10px;height:140px;border-radius:10px;border:2px solid #333;display:flex;flex-direction:column;justify-content:center;}
-#mult{font-size:3.5rem;font-weight:bold; transition:0.1s;}.ctrl{padding:15px;background:#1a1a1a;margin:10px;border-radius:15px;}
-input{width:90%;padding:10px;margin:5px 0;border-radius:8px;border:none;background:#222;color:#fff;}
-.btn{width:95%;padding:15px;border:none;border-radius:10px;font-weight:bold;font-size:1.1rem;cursor:pointer;margin-bottom:10px;}
-.bet{background:var(--m);color:#fff;}.cash{background:#fbc02d;color:#000;}.wd-btn{background:#25d366;color:#fff;}.dep-btn{background:var(--p);color:#fff;}
-.auto-sec{margin:10px 0;font-size:0.8rem;display:flex;justify-content:center;gap:8px;}
-.winners-table{margin:10px;background:#111;padding:10px;border-radius:10px;font-size:0.8rem;}
-table{width:100%;border-collapse:collapse;}th{color:var(--m);padding-bottom:5px;}td{padding:5px;border-bottom:1px solid #222;}
+<title>Real-pesa | Official</title><style>
+:root{--p:#2e7d32;--m:#66bb6a;--d:#0a0a0a;--r:#ff5252;--g:#1a1a1a;}body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--d);color:#fff;text-align:center;overflow-x:hidden;}
+header{background:linear-gradient(to bottom, var(--p), #1b5e20);padding:20px;font-weight:bold;cursor:pointer;}.logo{font-size:1.5rem;letter-spacing:2px;text-shadow:2px 2px #000;}
+#login-scr{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--d);z-index:100;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+.hist{background:var(--g);padding:10px;display:flex;justify-content:center;gap:8px;font-size:0.75rem;border-bottom:1px solid #333;}
+.h-item{background:#444;padding:4px 10px;border-radius:15px;color:var(--m);font-weight:bold;}.game{background:radial-gradient(circle, #222 0%, #000 100%);margin:15px;height:160px;border-radius:15px;border:1px solid #444;display:flex;flex-direction:column;justify-content:center;}
+#mult{font-size:4rem;font-weight:bold;transition:0.05s;}.ctrl{padding:20px;background:var(--g);margin:15px;border-radius:20px;border:1px solid #333;}
+input{width:80%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #444;background:#111;color:#fff;}
+.btn{width:95%;padding:18px;border:none;border-radius:12px;font-weight:bold;font-size:1.2rem;cursor:pointer;margin-bottom:12px;text-transform:uppercase;}
+.bet{background:var(--m);color:#fff;}.cash{background:#fbc02d;color:#000;}.wd-btn{background:#25d366;color:#fff;font-size:0.9rem;padding:12px;}.dep-btn{background:var(--p);color:#fff;font-size:0.9rem;padding:12px;}
 </style></head><body>
-<header>Real-pesa Live Aviator <div class="live-n">● <span id="online">142</span> Players Online</div></header>
+<div id="login-scr"><h2>REAL-PESA</h2><input type="text" id="u-name" placeholder="Enter Username"><button class="btn bet" onclick="login()">START PLAYING</button></div>
+<header onclick="showAdmin()"><div class="logo">REAL-PESA</div></header>
 <div class="hist" id="hist"><span>History:</span></div>
-<div class="game"><div id="mult">1.00x</div><div id="stat" style="color:#888;">Starting...</div></div>
+<div class="game"><div id="mult">1.00x</div><div id="stat" style="color:#aaa;font-size:0.8rem;">READY</div></div>
 <div class="ctrl">
-    <div>Wallet: <span id="bal">KES 0.00</span></div>
+    <div style="margin-bottom:10px;color:var(--m);">Wallet: <span id="bal" style="font-weight:bold;">KES 0.00</span></div>
     <input type="number" id="amt" placeholder="Bet Amount">
-    <div class="auto-sec">
-        <span>Auto:</span><input type="number" id="auto-val" placeholder="2.00" style="width:50px;margin:0;">
-        <label><input type="checkbox" id="auto-bet"> Auto Bet</label>
-    </div>
-    <button id="btn" class="btn bet" onclick="action()">PLACE BET</button>
-    <button class="btn dep-btn" onclick="deposit()">DEPOSIT (POCHI)</button>
-    <button class="btn wd-btn" onclick="withdraw()">WITHDRAW</button>
+    <button id="btn" class="btn bet" onclick="action()">Place Bet</button>
+    <div style="display:flex;gap:10px;"><button class="btn dep-btn" style="flex:1;" onclick="deposit()">Deposit</button><button class="btn wd-btn" style="flex:1;" onclick="withdraw()">Withdraw</button></div>
 </div>
-<div class="winners-table">
-    <table><thead><tr><th>User</th><th>Multiplier</th><th>Win (KES)</th></tr></thead>
-    <tbody id="win-rows">
-        <tr><td>User_721</td><td>4.50x</td><td>KES 2,250</td></tr>
-        <tr><td>User_104</td><td>12.10x</td><td>KES 6,050</td></tr>
-    </tbody></table>
-</div>
-<footer style="font-size:0.7rem;color:#888;padding-bottom:10px;">Pochi: 0797097831</footer>
 <script>
-let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0;
-const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('btn'), bl=document.getElementById('bal'), wr=document.getElementById('win-rows');
-function addH(v){h.unshift(v);if(h.length>5)h.pop();let html='<span>History:</span>';h.forEach(i=>{html+=`<span class="h-item">${i}x</span>`});document.getElementById('hist').innerHTML=html;}
-function loop(){
-    isFlying=true; m=1.0; x.style.color="#fff"; s.innerText="Flying...";
-    if(document.getElementById('auto-bet').checked && myBet===0){ action(); }
-    let crash=Math.random()*6+1.1;
-    iv=setInterval(()=>{
-        m+=0.01; x.innerText=m.toFixed(2)+"x";
-        let autoAt = parseFloat(document.getElementById('auto-val').value);
-        if(myBet>0 && autoAt > 0 && m >= autoAt){ cashOut(); }
-        if(m>=crash){ clearInterval(iv); isFlying=false; addH(m.toFixed(2));
-            x.innerText="FLEW AWAY!"; x.style.color="var(--r)"; s.innerText="Waiting...";
-            if(myBet>0){ b.innerText="PLACE BET"; b.className="btn bet"; myBet=0; }
-            setTimeout(loop, 3000);
-        }
-    },100);
-}
-function action(){
-    if(myBet===0 && isFlying && m < 1.15){
-        myBet=document.getElementById('amt').value||10; b.innerText="CASH OUT"; b.className="btn cash";
-    } else if(myBet>0 && isFlying){ cashOut(); }
-}
-function cashOut(){
-    let win = (myBet * m); wallet += win; bl.innerText = "KES " + wallet.toFixed(2);
-    let newRow = `<tr><td>User_${Math.floor(Math.random()*900+100)}</td><td>${m.toFixed(2)}x</td><td>KES ${win.toFixed(0)}</td></tr>`;
-    wr.innerHTML = newRow + wr.innerHTML; if(wr.rows.length>5)wr.deleteRow(5);
-    alert("Won KES "+win.toFixed(2)); b.innerText="PLACE BET"; b.className="btn bet"; myBet=0;
-}
-function deposit(){ window.location.href = `https://wa.me/254797097831?text=${encodeURIComponent("Hello Admin, I want to deposit KES. Send me the Pochi details.")}`; }
-function withdraw(){ window.location.href = `https://wa.me/254797097831?text=${encodeURIComponent("Hello Admin, I want to withdraw KES " + wallet.toFixed(2) + " from Real-pesa.")}`; }
-setInterval(()=>{document.getElementById('online').innerText=Math.floor(Math.random()*20+130);},5000);
-loop();
-</script></body></html>
+let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=false;
+const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('btn'), bl=document.getElementById('bal');
+function save(){ localStorage.setItem('rp_bal', wallet); bl.innerText="KES "+wallet.toFixed(2); }
+    
