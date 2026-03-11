@@ -101,7 +101,6 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
         ctx.strokeStyle = "#ff0055"; ctx.lineWidth = 4; ctx.moveTo(0, canvas.height);
-        // Drawing curve at a slower rate
         for (let i = 0; i < frame; i++) {
             let x = (i / 400) * canvas.width;
             let y = canvas.height - Math.pow(i / 100, 2);
@@ -115,7 +114,6 @@
     function gameLoop() {
         if (!isFlying) return;
         frame++;
-        // SLOWED DOWN: Increments are smaller now
         multiplier += 0.002 + (frame / 15000);
         multDisplay.innerText = multiplier.toFixed(2) + "x";
         
@@ -155,8 +153,16 @@
 
     function startFlight() {
         isFlying = true; frame = 0; multiplier = 1.00;
-        // Crash point logic remains random but feels better with slow speed
-        crashPoint = (Math.random() * 4 + 1.1).toFixed(2);
+        
+        // --- HIGH FLYER LOGIC ---
+        // 70% chance to fly between 2.00x and 6.00x
+        // 30% chance to fly between 1.10x and 2.00x
+        if (Math.random() < 0.7) {
+            crashPoint = (Math.random() * 4 + 2.0).toFixed(2);
+        } else {
+            crashPoint = (Math.random() * 0.9 + 1.1).toFixed(2);
+        }
+        
         statusText.innerText = betPlaced ? "In Flight!" : "Watching Flight...";
         if (betPlaced) cashBtn.disabled = false;
         multDisplay.style.color = "white";
