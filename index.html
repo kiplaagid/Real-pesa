@@ -3,65 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real-pesa | Wallet</title>
+    <title>Real-pesa | Secure Wallet</title>
     <style>
-        :root {
-            --primary: #1b5e20;
-            --accent: #2e7d32;
-            --mpesa: #4caf50;
-            --light: #ffffff;
-            --gray: #f4f4f4;
-        }
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background-color: var(--gray); text-align: center; color: #333; }
-        header { background: var(--primary); color: white; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .balance-card { background: white; margin: -20px auto 20px; width: 85%; max-width: 400px; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .balance-amount { font-size: 2rem; font-weight: bold; color: var(--accent); margin: 10px 0; }
-        .container { max-width: 500px; margin: 0 auto; padding: 0 15px 40px; }
+        :root { --p: #1b5e20; --a: #2e7d32; --m: #4caf50; --g: #f4f4f4; }
+        body { font-family: sans-serif; margin: 0; background: var(--g); text-align: center; }
+        header { background: var(--p); color: white; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .balance-card { background: white; margin: -25px auto 20px; width: 85%; max-width: 400px; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-bottom: 4px solid var(--m); }
+        .amount { font-size: 2.2rem; font-weight: bold; color: var(--a); margin: 10px 0; }
+        .container { max-width: 450px; margin: 0 auto; padding: 0 15px 50px; }
         .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: left; }
-        .instruction-box { background: #e8f5e9; padding: 15px; border-radius: 10px; border-left: 5px solid var(--mpesa); margin: 15px 0; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-        .btn-confirm { width: 100%; background: var(--mpesa); color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
-        footer { color: #888; font-size: 0.8rem; margin-top: 20px; }
-    </style>
-</head>
-<body>
-
-    <header>
-        <h1>Real-pesa</h1>
-    </header>
-
-    <div class="balance-card">
-        <p style="margin: 0; color: #777;">Current Balance</p>
-        <div class="balance-amount">KES 0.00</div>
-        <small style="color: var(--mpesa);">● Wallet Active</small>
-    </div>
-
-    <div class="container">
-        <div class="card">
-            <h3 style="margin-top:0; color:var(--primary);">💰 Deposit via Pochi</h3>
-            <div class="instruction-box">
-                <strong>M-PESA Steps:</strong>
-                <p style="margin: 5px 0;">1. Lipa na M-PESA<br>2. Pochi la Biashara<br>3. Phone: <strong>0797097831</strong></p>
-            </div>
-            
-            <form action="https://formspree.io/f/YOUR_ID" method="POST">
-                <label>Transaction Details</label>
-                <input type="text" name="transaction_code" placeholder="M-PESA Code (e.g. RBT5...)" required>
-                <input type="number" name="amount" placeholder="Amount (KES)" required>
-                <button type="submit" class="btn-confirm">Confirm Deposit</button>
-            </form>
-        </div>
-
-        <div class="card" style="display: flex; justify-content: space-around; text-align: center;">
-            <div>🛡️<br><small>Secure</small></div>
-            <div>⚡<br><small>Fast</small></div>
-            <div>📈<br><small>Track</small></div>
-        </div>
-    </div>
-
-    <footer>
-        &copy; 2026 Real-pesa. Created by Kiplangat Gideon.
-    </footer>
-
-</body>
-</html>
+        .box { background: #e8f5e9; padding: 15px; border-radius: 10px; border-left: 5px solid var(--m); margin: 15px 0; }
+        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        .btn { width: 100%; background: var(--m); color: white
