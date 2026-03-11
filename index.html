@@ -9,6 +9,9 @@ header{background:linear-gradient(to bottom, var(--p), #1b5e20);padding:20px;fon
 input{width:80%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #444;background:#111;color:#fff;}
 .btn{width:95%;padding:18px;border:none;border-radius:12px;font-weight:bold;font-size:1.2rem;cursor:pointer;margin-bottom:12px;text-transform:uppercase;}
 .bet{background:var(--m);color:#fff;}.cash{background:#fbc02d;color:#000;}.wd-btn{background:#25d366;color:#fff;font-size:0.9rem;padding:12px;}.dep-btn{background:var(--p);color:#fff;font-size:0.9rem;padding:12px;}
+.tx-list{margin:15px;background:var(--g);padding:15px;border-radius:15px;border:1px solid #333;text-align:left;}
+.tx-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #222;font-size:0.8rem;}
+.win-c{color:var(--m);}.loss-c{color:var(--r);}
 </style></head><body>
 <div id="login-scr"><h2>REAL-PESA</h2><input type="text" id="u-name" placeholder="Enter Username"><button class="btn bet" onclick="login()">START PLAYING</button></div>
 <header onclick="showAdmin()"><div class="logo">REAL-PESA</div></header>
@@ -20,8 +23,70 @@ input{width:80%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #4
     <button id="btn" class="btn bet" onclick="action()">Place Bet</button>
     <div style="display:flex;gap:10px;"><button class="btn dep-btn" style="flex:1;" onclick="deposit()">Deposit</button><button class="btn wd-btn" style="flex:1;" onclick="withdraw()">Withdraw</button></div>
 </div>
+<div class="tx-list">
+    <div style="font-weight:bold;margin-bottom:10px;color:var(--m);">Recent Transactions</div>
+    <div id="tx-data"></div>
+</div>
 <script>
-let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=false;
-const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('btn'), bl=document.getElementById('bal');
-function save(){ localStorage.setItem('rp_bal', wallet); bl.innerText="KES "+wallet.toFixed(2); }
+let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=false, txs=[];
+const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('btn'), bl=document.getElementById('bal'), td=document.getElementById('tx-data');
+function save(){ 
+    localStorage.setItem('rp_bal', wallet); 
+    localStorage.setItem('rp_txs', JSON.stringify(txs));
+    bl.innerText="KES "+wallet.toFixed(2); 
+    renderTxs();
+}
+function renderTxs(){
+    td.innerHTML = txs.map(t => `<div class="tx-item"><span>${t.type}</span><span class="${t.amt >=0?'win-c':'loss-c'}">KES ${t.amt}</span></div>`).join('');
+}
+function addTx(type, amt){
+    txs.unshift({type: type, amt: amt});
+    if(txs.length > 5) txs.pop();
+    save();
+}
+function login(){ 
+    let u=document.getElementById('u-name').value; 
+    if(u){ 
+        wallet = parseFloat(localStorage.getItem('rp_bal')) || 0;
+        txs = JSON.parse(localStorage.getItem('rp_txs')) || [];
+        document.getElementById('login-scr').style.display='none'; 
+        save(); loop(); 
+    } 
+}
+function showAdmin(){ 
+    isAdmin=!isAdmin; 
+    let cmd = prompt(isAdmin?"Admin Active. Type 'add' to boost wallet:":"Admin OFF");
+    if(cmd==="add"){ 
+        let a=parseFloat(prompt("Amount?")); 
+        wallet += a; addTx("Admin Deposit", a);
+    }
+}
+function addH(v){h.unshift(v);if(h.length>6)h.pop();let html='<span>History:</span>';h.forEach(i=>{html+=`<span class="h-item">${i}x</span>`});document.getElementById('hist').innerHTML=html;}
+function loop(){
+    isFlying=true; m=1.0; x.style.color="#fff";
+    nextCrash = (Math.random()*7+1.05).toFixed(2);
+    if(isAdmin) s.innerText = "PREDICTION: " + nextCrash + "x";
+    iv=setInterval(()=>{
+        m+=0.01; x.innerText=m.toFixed(2)+"x";
+        if(m>=nextCrash){ clearInterval(iv); isFlying=false; addH(m.toFixed(2));
+            x.innerText="FLEW AWAY!"; x.style.color="var(--r)";
+            if(myBet>0){ b.innerText="Place Bet"; b.className="btn bet"; myBet=0; }
+            setTimeout(loop, 4000);
+        }
+    },100);
+}
+function action(){
+    let a=parseFloat(document.getElementById('amt').value)||10;
+    if(myBet===0 && isFlying && m < 1.15){ 
+        if(wallet < a){ alert("Low Balance!"); return; }
+        myBet=a; wallet -= a; addTx("Place Bet", -a); b.innerText="CASH OUT"; b.className="btn cash"; 
+    } 
+    else if(myBet>0 && isFlying){ 
+        let win = (myBet * m); wallet += win; addTx("Won Round", win.toFixed(0)); 
+        b.innerText="Place Bet"; b.className="btn bet"; myBet=0; alert("Won KES "+win.toFixed(2));
+    }
+}
+function deposit(){ window.location.href=`https://wa.me/254797097831?text=Deposit%20Request`; }
+function withdraw(){ window.location.href=`https://wa.me/254797097831?text=Withdraw%20KES%20${wallet}`; }
+</script></body></html>
     
