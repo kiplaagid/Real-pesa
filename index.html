@@ -25,5 +25,57 @@ input{width:90%;padding:15px;margin-bottom:15px;border-radius:12px;border:1px so
 .wd-btn{background:#25d366;color:#fff;flex:1;padding:15px;border-radius:12px;font-size:1rem;}
 .tx-list{margin:15px;background:var(--g);padding:18px;border-radius:20px;border:1px solid #333;text-align:left;max-height: 250px; overflow: hidden;}
 .tx-header{font-weight:bold;color:var(--m);margin-bottom:12px;display:block;}
-.tx-item{display:flex;justify-content:space-between;padding:10px 0;border-
-    
+.tx-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #222;font-size:0.85rem;}
+.win-c{color:var(--m);font-weight:bold;}
+.footer-box{background:#0a0a0a;padding:20px;border-top:1px solid #222;margin-top:20px;}
+.dep-steps{text-align:left;font-size:0.8rem;color:#aaa;margin-bottom:15px;background:#111;padding:10px;border-radius:10px;}
+</style></head><body>
+<header><div class="logo">REAL-PESA</div><span id="bal">Wallet: KES 0.00</span></header>
+<div class="how-to"><b>HOW TO PLAY:</b> 1. Enter Bet. 2. Tap PLACE BET. 3. CASH OUT before crash!</div>
+<div class="hist" id="roundHist">History: <span class="h-item">1.54x</span></div>
+<div class="game"><div id="mult">1.00x</div><div id="stat">READY</div></div>
+<div class="ctrl">
+    <input type="number" id="amt" placeholder="Bet Amount">
+    <button id="betBtn" class="btn bet">PLACE BET</button>
+    <button id="cashBtn" class="btn cash">CASH OUT</button>
+    <div style="display:flex;gap:10px;"><button class="dep-btn" onclick="deposit()">DEPOSIT</button><button class="wd-btn">WITHDRAW</button></div>
+</div>
+<div class="tx-list"><span class="tx-header">Recent Transactions</span><div id="tx-data"></div></div>
+<div class="footer-box">
+    <div class="dep-steps"><b>HOW TO DEPOSIT:</b> 1. M-PESA > Lipa na M-PESA. 2. Pochi la Biashara. 3. Enter: 0797097831</div>
+    <div style="color:var(--m);font-weight:bold;">OFFICIAL POCHI: 0797097831</div>
+</div>
+<script>
+// Logic for the game multiplier and rounds
+let m=1.0, isFlying=false, iv;
+const x=document.getElementById('mult'), s=document.getElementById('stat'), rh=document.getElementById('roundHist');
+
+window.onload = () => { loop(); startLiveTransactions(); };
+
+function startLiveTransactions() {
+    const names = ["Kamau", "Fatuma", "Otieno", "Blessing", "Maina"];
+    setInterval(() => {
+        const name = names[Math.floor(Math.random()*names.length)];
+        const win = (Math.random()*4500+200).toFixed(0);
+        const html = `<div class="tx-item"><span>${name} - Won Round</span><span class="win-c">KES ${win}</span></div>`;
+        document.getElementById('tx-data').innerHTML = html + document.getElementById('tx-data').innerHTML;
+    }, 3500);
+}
+
+function loop(){ 
+    isFlying=true; m=1.0; x.style.color="#fff"; s.innerText="FLYING...";
+    let crash=(Math.random()*5+1.2).toFixed(2);
+    iv=setInterval(()=>{
+        m+=0.01; x.innerText=m.toFixed(2)+"x";
+        if(m>=crash){
+            clearInterval(iv); isFlying=false; x.innerText="CRASHED!"; x.style.color="#ff5252"; s.innerText="READY";
+            let item = document.createElement("span");
+            item.className = "h-item " + (crash < 2 ? "crash" : "");
+            item.innerText = crash + "x";
+            rh.insertBefore(item, rh.firstChild.nextSibling);
+            setTimeout(loop, 7000); 
+        }
+    },100);
+}
+function deposit(){ window.location.href="https://wa.me/254797097831"; }
+</script></body></html>
