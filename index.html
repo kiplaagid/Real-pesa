@@ -20,9 +20,9 @@ input{width:80%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #4
 <audio id="bgMusic" loop><source src="music.mp3" type="audio/mpeg"></audio>
 <div id="login-scr">
     <h2>REAL-PESA</h2>
-    <input type="tel" id="u-phone" placeholder="Phone Number (07...)" required>
-    <input type="password" id="u-pass" placeholder="Password" required>
-    <button class="btn bet" onclick="login()">REGISTER / LOGIN</button>
+    <p style="color: #66bb6a; font-size: 0.8rem; margin-bottom: 20px;">Enter any name to start playing</p>
+    <input type="text" id="u-name" placeholder="Enter Username" required>
+    <button class="btn bet" onclick="login()">START PLAYING</button>
 </div>
 <header onclick="showAdmin()"><div class="logo">REAL-PESA</div></header>
 <div class="hist" id="hist"><span>History:</span></div>
@@ -41,7 +41,7 @@ input{width:80%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #4
     <div style="font-size: 0.7rem; color: #888;">Send funds then WhatsApp confirmed message for approval.</div>
 </div>
 <script>
-// --- PASTE YOUR ACTUAL FIREBASE CONFIG KEYS HERE ---
+// --- YOUR FIREBASE CONFIG FROM GOOGLE CONSOLE ---
 const firebaseConfig = {
   apiKey: "YOUR_KEY",
   authDomain: "YOUR_DOMAIN",
@@ -56,20 +56,16 @@ let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=fal
 const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('betBtn'), cb=document.getElementById('cashBtn'), bl=document.getElementById('bal'), td=document.getElementById('tx-data'), music=document.getElementById('bgMusic');
 
 async function login() {
-    let phone = document.getElementById('u-phone').value.trim();
-    let pass = document.getElementById('u-pass').value.trim();
-    if (phone.length < 10 || pass.length < 4) { alert("Invalid phone or password!"); return; }
-
-    currentUser = phone;
+    let name = document.getElementById('u-name').value.trim();
+    if (name.length < 2) { alert("Please enter a username."); return; }
+    currentUser = name;
     const docRef = db.collection("players").doc(currentUser);
     const doc = await docRef.get();
-
     if (doc.exists) {
-        if (doc.data().password !== pass) { alert("Wrong password!"); return; }
         wallet = doc.data().balance;
         txs = doc.data().transactions || [];
     } else {
-        await docRef.set({ phone: phone, password: pass, balance: 0, transactions: [] });
+        await docRef.set({ username: name, balance: 0, transactions: [] });
         wallet = 0;
     }
     document.getElementById('login-scr').style.display='none';
@@ -79,5 +75,14 @@ async function login() {
 }
 
 async function updateDb() { await db.collection("players").doc(currentUser).update({ balance: wallet, transactions: txs }); }
-function renderTxs(){ td.innerHTML = txs.map(t => `<div class="tx-
-    
+function renderTxs(){ td.innerHTML = txs.map(t => `<div class="tx-item"><span>${t.type}</span><span class="${t.amt >=0?'win-c':'loss-c'}">KES ${t.amt}</span></div>`).join(''); }
+async function addTx(type, amt){ txs.unshift({type: type, amt: amt}); if(txs.length > 5) txs.pop(); await updateDb(); }
+function showAdmin(){ isAdmin=!isAdmin; let cmd = prompt(isAdmin?"Admin Active. Type 'add':":"OFF"); if(cmd==="add"){ let a=parseFloat(prompt("Amount?")); wallet += a; addTx("Admin Deposit", a); } }
+function addH(v){h.unshift(v);if(h.length>6)h.pop();let html='<span>History:</span>';h.forEach(i=>{html+=`<span class="h-item">${i}x</span>`});document.getElementById('hist').innerHTML=html;}
+function loop(){ isFlying=true; m=1.0; x.style.color="#fff"; nextCrash = (Math.random()*7+1.05).toFixed(2); if(isAdmin) s.innerText = "PRED: " + nextCrash + "x";
+    iv=setInterval(()=>{ m+=0.01; x.innerText=m.toFixed(2)+"x"; if(m>=nextCrash){ clearInterval(iv); isFlying=false; addH(m.toFixed(2)); x.innerText="FLEW AWAY!"; x.style.color="var(--r)"; b.style.display="block"; cb.style.display="none"; myBet=0; setTimeout(loop, 4000); } },100); }
+async function placeBet(){ let a=parseFloat(document.getElementById('amt').value)||10; if(wallet < a){ alert("Low Balance!"); return; } myBet=a; wallet -= a; await addTx("Place Bet", -a); b.style.display="none"; cb.style.display="block"; }
+async function cashOut(){ if(myBet>0 && isFlying){ let win = (myBet * m); wallet += win; await addTx("Won Round", win.toFixed(0)); b.style.display="block"; cb.style.display="none"; myBet=0; alert("Won KES "+win.toFixed(2)); } }
+function deposit(){ alert("PAY TO POCHI: 0797097831\n\nSend WhatsApp message for approval."); window.location.href=`https://wa.me/254797097831?text=Deposit%20Name:%20${currentUser}`; }
+function withdraw(){ window.location.href=`https://wa.me/254797097831?text=Withdraw%20Request:%20KES%20${wallet}%20Name:%20${currentUser}`; }
+</script></body></html>
